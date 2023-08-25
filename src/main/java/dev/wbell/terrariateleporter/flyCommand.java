@@ -26,7 +26,7 @@ public class flyCommand implements CommandExecutor, TabExecutor {
                 if (player.isFlying()) {
                     player.sendMessage("You are now falling!");
                 } else {
-                    player.sendMessage("You are now not falling!");
+                    player.sendMessage("You are now not flying!");
                 }
                 player.setFlying(false);
                 player.setAllowFlight(false);
