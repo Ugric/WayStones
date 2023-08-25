@@ -1,4 +1,6 @@
-name: terrariaTeleporter
+name: WayStones
 version: '${project.version}'
+author: 'Ugric'
+description: 'A plugin that adds waystones to your server, allowing players to teleport between them.'
 main: dev.wbell.terrariateleporter.TerrariaTeleporter
 api-version: '1.20'
