@@ -1,16 +1,25 @@
 package dev.wbell.terrariateleporter;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
 
 public class TerrariaTeleporter extends JavaPlugin {
+    public static waystonePosition waystonePosition = new waystonePosition();
+
     @Override
     public void onEnable() {
         // Plugin startup logic
-        getLogger().info("hello world");
-        getCommand("fly").setExecutor(new flyCommand());
+        EndCrystalRightClickListener endCrystalRightClickListener = new EndCrystalRightClickListener();
+        EndCrystalRightClickListener.owningPluginInstance = this;
+        getServer().getPluginManager().registerEvents(endCrystalRightClickListener, this);
+        String folderPath = getDataFolder().getAbsolutePath();
+        // make all the folders
+        boolean wasSuccessful = new File(folderPath).mkdirs();
+        if (!wasSuccessful) {
+            getLogger().warning("Failed to create plugin folder");
+        }
+        dev.wbell.terrariateleporter.waystonePosition.loadPositions(new File(folderPath, "waystones.json"));
     }
 
     @Override

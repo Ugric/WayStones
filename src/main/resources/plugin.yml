@@ -2,7 +2,3 @@ name: terrariaTeleporter
 version: '${project.version}'
 main: dev.wbell.terrariateleporter.TerrariaTeleporter
 api-version: '1.20'
-commands:
-  fly:
-    description: "Fly"
-    usage: "/fly"
