@@ -19,6 +19,7 @@ import org.bukkit.metadata.FixedMetadataValue
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.util.Vector
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -27,9 +28,9 @@ import kotlin.math.sqrt
 class EndCrystalRightClickListener : Listener {
 
     fun playerNearbyHandler() {
-        thread{
+        thread {
             while (TerrariaTeleporter.running) {
-                Thread.sleep(((Math.random()*5000)+5000).toLong())
+                Thread.sleep(((Math.random() * 5000) + 5000).toLong())
                 for (waystone in waystonePosition.positions) {
                     val world = Bukkit.getWorld(waystone.pos.world)
                     if (world == null) {
@@ -37,21 +38,22 @@ class EndCrystalRightClickListener : Listener {
                         continue
                     }
                     val location = Location(world, waystone.pos.x + 0.5, waystone.pos.y + 0.5, waystone.pos.z + 0.5)
-                    for (player in world.players){
+                    for (player in world.players) {
                         val distance = player.location.distance(location)
-                        if (distance <= 5) {
+                        if (distance <= 10) {
                             // make sound play, with random pitch
                             // and speed
-                            val pitch = (Math.random()/2).toFloat()
-                            val speed = (Math.random()/2).toFloat()
+                            val pitch = (Math.random() / 2).toFloat()
+                            val speed = (Math.random() / 2).toFloat()
                             val sound = player.playSound(location, Sound.BLOCK_PORTAL_AMBIENT, speed, pitch)
                         }
-                    }                }
+                    }
+                }
             }
         }
-        thread{
+        thread {
             while (TerrariaTeleporter.running) {
-                Thread.sleep(((Math.random()*500)+1000).toLong())
+                Thread.sleep(((Math.random() * 500) + 1000).toLong())
                 for (waystone in waystonePosition.positions) {
                     val world = Bukkit.getWorld(waystone.pos.world)
                     if (world == null) {
@@ -60,7 +62,7 @@ class EndCrystalRightClickListener : Listener {
                     }
                     val location = Location(world, waystone.pos.x + 0.5, waystone.pos.y + 0.5, waystone.pos.z + 0.5)
                     var playerNearby = false
-                    for (player in world.players){
+                    for (player in world.players) {
                         val distance = player.location.distance(location)
                         if (distance <= 15) {
                             playerNearby = true
@@ -74,6 +76,7 @@ class EndCrystalRightClickListener : Listener {
             }
         }
     }
+
     private fun blockBreak(block: Block) {
         var pass = false
         for (material in waystoneBlocks) {
@@ -163,6 +166,7 @@ class EndCrystalRightClickListener : Listener {
 
     private class ChestGUIHolder : org.bukkit.inventory.InventoryHolder {
         public val positions = ArrayList<WayStoneData>()
+        val page = 0
         override fun getInventory(): Inventory {
             return inventory
         }
@@ -306,6 +310,7 @@ class EndCrystalRightClickListener : Listener {
         fun distance(pos1: PositionData, pos2: PositionData): Double {
             return sqrt((pos1.x - pos2.x).pow(2.0) + (pos1.y - pos2.y).pow(2.0) + (pos1.z - pos2.z).pow(2.0))
         }
+
         @JvmField
         var owningPluginInstance: Plugin? = null
     }

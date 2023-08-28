@@ -1,9 +1,15 @@
 package dev.wbell.terrariateleporter
 
-import org.bukkit.Particle
+import org.bukkit.Location
+import org.bukkit.Material
+import org.bukkit.World
+import org.bukkit.entity.FallingBlock
+import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.util.Vector
 import java.io.File
+
 
 class TerrariaTeleporter : JavaPlugin() {
     override fun onEnable() {
@@ -26,11 +32,63 @@ class TerrariaTeleporter : JavaPlugin() {
         running = false
     }
 
+    fun startMovingBlock(player: Player) {
+        object : BukkitRunnable() {
+            override fun run() {
+                object : BukkitRunnable() {
+                    override fun run() {
+                        val location = player.location
+                        val world = location.world!!
+                        player.sendMessage("Starting to move block")
+                        val ice: FallingBlock = player.world.spawnFallingBlock(location, Material.LODESTONE.createBlockData())
+                        player.sendMessage("Spawned falling block")
+                        ice.dropItem = false
+                        ice.setGravity(false)
+                        ice.isInvulnerable = true
+                        ice.isSilent = true
+                        ice.isPersistent = true
+                        ice.setHurtEntities(false)
+                        ice.velocity = Vector(0f, 0.1f, 0f)
+                        ice.velocity = ice.velocity.multiply(1)
+                        object : BukkitRunnable() {
+                            override fun run() {
+                                object : BukkitRunnable() {
+                                    override fun run() {
+                                        ice.velocity = Vector(0f, 0f, 0f)
+                                        val newLocation = ice.location
+                                        newLocation.y = newLocation.y + 1
+                                        world.getBlockAt(newLocation).type = Material.LODESTONE
+                                        ice.remove()
+                                    }
+                                }.runTask(TerrariaTeleporter.instance);
+                            }
+                        }.runTaskLaterAsynchronously(TerrariaTeleporter.instance, 10)
+                    }
+                }.runTask(TerrariaTeleporter.instance);
+
+            }
+        }.runTaskAsynchronously(this)
+    }
+
 
     companion object {
         var running = true
         var waystonePosition = waystonePosition()
-            lateinit var instance: TerrariaTeleporter
-                private set
+        lateinit var instance: TerrariaTeleporter
+            private set
+
+        fun spawnFloatingSand(location: Location) {
+            val world: World = location.world ?: return
+            val fallingBlock = world.spawnFallingBlock(location, Material.LAVA.createBlockData())
+            fallingBlock.setGravity(false)
+            fallingBlock.shouldAutoExpire(false)
+            fallingBlock.dropItem = false
+            fallingBlock.setHurtEntities(false)
+            fallingBlock.isInvulnerable = true
+            fallingBlock.isSilent = true
+            fallingBlock.isPersistent = true
+            fallingBlock.velocity = fallingBlock.velocity.multiply(1)
+            fallingBlock.isVisibleByDefault = false
+        }
     }
 }

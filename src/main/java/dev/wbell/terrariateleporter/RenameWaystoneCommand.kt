@@ -18,7 +18,7 @@ class RenameWaystoneCommand : CommandExecutor {
         if (args.isEmpty()) {
             return false
         }
-        if (sender.hasPermission("waystones.rename")) {
+        if (!sender.hasPermission("waystones.rename")) {
             sender.sendMessage(ChatColor.RED.toString() + "You do not have permission to use this command!")
             return true
         }
