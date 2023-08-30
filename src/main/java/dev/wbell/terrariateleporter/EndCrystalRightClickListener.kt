@@ -271,6 +271,14 @@ class EndCrystalRightClickListener : Listener {
                 }
             }
         }
+
+        val heldItemMeta = heldItem.getItemMeta()
+
+        var waystoneName = "Waystone (${x}, ${y}, ${z})"
+        if (heldItemMeta.hasDisplayName()){
+            waystoneName = heldItemMeta.getDisplayName()
+        }
+
         if (player.gameMode == GameMode.SURVIVAL) {
             if (heldItem.amount > 1) {
                 heldItem.amount -= 1
@@ -278,7 +286,7 @@ class EndCrystalRightClickListener : Listener {
                 player.inventory.removeItem(heldItem)
             }
         }
-        waystonePosition.addWaystone(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name), "Waystone (${x}, ${y}, ${z})")
+        waystonePosition.addWaystone(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name), waystoneName)
         val world = location.world
         val effectLocation = Location(location.world, x + 0.5, (y + 2).toDouble(), z + 0.5)
         world.strikeLightningEffect(effectLocation)
