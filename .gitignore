@@ -113,4 +113,3 @@ buildNumber.properties
 run/
 .vscode/settings.json
 .gitignore
-settings.json
