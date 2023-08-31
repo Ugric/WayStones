@@ -214,6 +214,8 @@ class EndCrystalRightClickListener : Listener {
         val y = block.y
         val z = block.z
         if (!event.action.toString().contains("RIGHT_CLICK")) return
+        if (!player.hasPermission("waystones.create")) return // Simple permissions check
+
         var currentWaystone = waystonePosition.waystoneExists(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))
         if (currentWaystone != null) {
             val positions = waystonePosition.getAllPositionNotIncluding(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))

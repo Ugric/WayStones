@@ -9,3 +9,10 @@ commands:
     description: 'Renames a waystone.'
     usage: /renamewaystone <name>
     permission: waystones.rename
+permissions:
+  waystones.rename:
+    description: Allows players to rename Waystones via command
+    default: op
+  waystones.create:
+    description: Allows players to create Waystones
+    default: op
