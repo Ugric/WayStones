@@ -44,7 +44,7 @@ class RenameWaystoneCommand : CommandExecutor {
             return true
         }
         waystonePosition.renameWaystone(nearest.pos, newName)
-        sender.sendMessage("Waystone renamed!")
+        sender.sendMessage("Waystone renamed to " + newName + "!")
         return true
     }
 }
