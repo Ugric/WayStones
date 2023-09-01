@@ -20,9 +20,14 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.util.Vector
+import org.bukkit.Location;
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.sqrt
+import eu.decentsoftware.holograms.api.holograms.Hologram;
+import eu.decentsoftware.holograms.api.holograms.HologramManager;
+import eu.decentsoftware.holograms.api.DHAPI
+import java.util.Arrays;
 
 
 class EndCrystalRightClickListener : Listener {
@@ -313,7 +318,17 @@ class EndCrystalRightClickListener : Listener {
             }
         }
 
+        // Begin hologram implementation 
+        val hologramLocation = Location(location.world, x + 0.5, (y + 3).toDouble(), z + 0.5)
+        val hologramText = Arrays.asList(waystoneName)
+
+        createHologram("name", hologramLocation, hologramText)
     }
+
+    private fun createHologram(name: String, location: Location, text: List<String>) {
+        val hologram = DHAPI.createHologram(name, location, text)
+        //hologram.show()
+    } 
 
     companion object {
         var waystoneBlocks = arrayOf(Material.DEEPSLATE_BRICK_WALL, Material.LODESTONE, Material.CRYING_OBSIDIAN, Material.DEEPSLATE_BRICK_SLAB, Material.AIR, Material.CAVE_AIR)
