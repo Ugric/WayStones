@@ -7,5 +7,12 @@ api-version: '1.20'
 commands:
   renamewaystone:
     description: 'Renames a waystone.'
-    usage: /rename-waystone <name>
+    usage: /renamewaystone <name>
     permission: waystones.rename
+permissions:
+  waystones.rename:
+    description: Allows players to rename Waystones via command
+    default: op
+  waystones.create:
+    description: Allows players to create Waystones
+    default: op
