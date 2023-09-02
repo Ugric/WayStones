@@ -1,12 +1,10 @@
-package dev.wbell.terrariateleporter
+package dev.wbell.waystones
 
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 class RenameWaystoneCommand : CommandExecutor {
 
@@ -19,13 +17,13 @@ class RenameWaystoneCommand : CommandExecutor {
             return false
         }
         if (!sender.hasPermission("waystones.rename")) {
-            sender.sendMessage(ChatColor.RED.toString() + "You do not have permission to use this command!")
+            sender.sendMessage("${ChatColor.DARK_RED}You do not have permission to use this command!")
             return true
         }
         val newName = args.joinToString(" ")
         val location = sender.location
         var nearest: WayStoneData? = null
-        for (waystone in TerrariaTeleporter.waystonePosition.positions) {
+        for (waystone in WayStones.WaystonePosition.positions) {
             if (waystone.name == newName) {
                 sender.sendMessage("A waystone with that name already exists")
                 return true
@@ -43,8 +41,8 @@ class RenameWaystoneCommand : CommandExecutor {
             sender.sendMessage("No waystone found!")
             return true
         }
-        waystonePosition.renameWaystone(nearest.pos, newName)
-        sender.sendMessage("Waystone renamed to " + newName + "!")
+        WaystonePosition.renameWaystone(nearest.pos, newName)
+        sender.sendMessage("Waystone renamed to $newName!")
         return true
     }
 }

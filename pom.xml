@@ -9,7 +9,7 @@
     <version>1.0</version>
     <packaging>jar</packaging>
 
-    <name>terrariaTeleporter</name>
+    <name>WayStones</name>
 
     <properties>
         <java.version>17</java.version>

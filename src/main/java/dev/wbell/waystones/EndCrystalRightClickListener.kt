@@ -1,4 +1,4 @@
-package dev.wbell.terrariateleporter
+package dev.wbell.waystones
 
 import org.bukkit.*
 import org.bukkit.block.Block
@@ -17,52 +17,43 @@ import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.metadata.FixedMetadataValue
 import org.bukkit.plugin.Plugin
-import org.bukkit.plugin.java.JavaPlugin
-import org.bukkit.scheduler.BukkitRunnable
-import org.bukkit.util.Vector
 import org.bukkit.Location;
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.sqrt
-import eu.decentsoftware.holograms.api.holograms.Hologram;
-import eu.decentsoftware.holograms.api.holograms.HologramManager;
-import eu.decentsoftware.holograms.api.DHAPI
-import java.util.Arrays;
 
 
 class EndCrystalRightClickListener : Listener {
 
     fun playerNearbyHandler() {
         thread {
-            while (TerrariaTeleporter.running) {
+            while (WayStones.running) {
                 Thread.sleep(((Math.random() * 5000) + 5000).toLong())
-                for (waystone in waystonePosition.positions) {
+                for (waystone in WaystonePosition.positions) {
                     val world = Bukkit.getWorld(waystone.pos.world)
                     if (world == null) {
-                        waystonePosition.removeWaystone(waystone.pos)
+                        WaystonePosition.removeWaystone(waystone.pos)
                         continue
                     }
                     val location = Location(world, waystone.pos.x + 0.5, waystone.pos.y + 0.5, waystone.pos.z + 0.5)
                     for (player in world.players) {
                         val distance = player.location.distance(location)
                         if (distance <= 10) {
-                            // make sound play, with random pitch
-                            // and speed
                             val pitch = (Math.random() / 2).toFloat()
                             val speed = (Math.random() / 2).toFloat()
-                            val sound = player.playSound(location, Sound.BLOCK_PORTAL_AMBIENT, speed, pitch)
+                            player.playSound(location, WayStones.ambiantSound, speed, pitch)
                         }
                     }
                 }
             }
         }
         thread {
-            while (TerrariaTeleporter.running) {
+            while (WayStones.running) {
                 Thread.sleep(((Math.random() * 500) + 1000).toLong())
-                for (waystone in waystonePosition.positions) {
+                for (waystone in WaystonePosition.positions) {
                     val world = Bukkit.getWorld(waystone.pos.world)
                     if (world == null) {
-                        waystonePosition.removeWaystone(waystone.pos)
+                        WaystonePosition.removeWaystone(waystone.pos)
                         continue
                     }
                     val location = Location(world, waystone.pos.x + 0.5, waystone.pos.y + 0.5, waystone.pos.z + 0.5)
@@ -95,9 +86,9 @@ class EndCrystalRightClickListener : Listener {
         val x = block.x
         val y = block.y
         val z = block.z
-        val position = waystonePosition.waystoneNear(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))
+        val position = WaystonePosition.waystoneNear(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))
         if (position != null) {
-            waystonePosition.removeWaystone(position.pos)
+            WaystonePosition.removeWaystone(position.pos)
             val strikeLocation = Location(location.world, position.pos.x + 0.5, position.pos.y + 2, position.pos.z + 0.5)
             strikeLocation.world.strikeLightningEffect(strikeLocation)
             for (selectPlayer in location.world.players) {
@@ -196,7 +187,7 @@ class EndCrystalRightClickListener : Listener {
         val x = block.x
         val y = block.y
         val z = block.z
-        val position = waystonePosition.waystoneNear(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), block.world.name))
+        val position = WaystonePosition.waystoneNear(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), block.world.name))
         if (position != null) e.isCancelled = true
     }
 
@@ -219,11 +210,11 @@ class EndCrystalRightClickListener : Listener {
         val y = block.y
         val z = block.z
         if (!event.action.toString().contains("RIGHT_CLICK")) return
-        if (!player.hasPermission("waystones.create")) return // Simple permissions check
+        if (WayStones.instance.config.getBoolean("require-permissions") && !player.hasPermission("waystones.create")) return // Simple permissions check
 
-        var currentWaystone = waystonePosition.waystoneExists(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))
+        var currentWaystone = WaystonePosition.waystoneExists(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))
         if (currentWaystone != null) {
-            val positions = waystonePosition.getAllPositionNotIncluding(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))
+            val positions = WaystonePosition.getAllPositionNotIncluding(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))
             openChestGUI(player, positions, currentWaystone)
             return
         }
@@ -242,7 +233,7 @@ class EndCrystalRightClickListener : Listener {
         run {
             // crying obsidian base
             for (i in 0..2) {
-                for (j in 0 until 2) {
+                for (j in 0..2) {
                     val cryingObsidian = block.world.getBlockAt(x - 1 + i, y - 2, z - 1 + j)
                     if (cryingObsidian.type != Material.CRYING_OBSIDIAN) return
                 }
@@ -279,11 +270,11 @@ class EndCrystalRightClickListener : Listener {
             }
         }
 
-        val heldItemMeta = heldItem.getItemMeta()
+        val heldItemMeta = heldItem.itemMeta
 
         var waystoneName = "Waystone (${x}, ${y}, ${z})"
         if (heldItemMeta.hasDisplayName()){
-            waystoneName = heldItemMeta.getDisplayName()
+            waystoneName = heldItemMeta.displayName
         }
 
         if (player.gameMode == GameMode.SURVIVAL) {
@@ -293,7 +284,7 @@ class EndCrystalRightClickListener : Listener {
                 player.inventory.removeItem(heldItem)
             }
         }
-        waystonePosition.addWaystone(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name), waystoneName)
+        WaystonePosition.addWaystone(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name), waystoneName, player.uniqueId.toString())
         val world = location.world
         val effectLocation = Location(location.world, x + 0.5, (y + 2).toDouble(), z + 0.5)
         world.strikeLightningEffect(effectLocation)
@@ -317,18 +308,7 @@ class EndCrystalRightClickListener : Listener {
                 selectPlayer.playSound(location, Sound.BLOCK_END_PORTAL_SPAWN, 1.0f, 1.0f)
             }
         }
-
-        // Begin hologram implementation 
-        val hologramLocation = Location(location.world, x + 0.5, (y + 3).toDouble(), z + 0.5)
-        val hologramText = Arrays.asList(waystoneName)
-
-        createHologram("name", hologramLocation, hologramText)
     }
-
-    private fun createHologram(name: String, location: Location, text: List<String>) {
-        val hologram = DHAPI.createHologram(name, location, text)
-        //hologram.show()
-    } 
 
     companion object {
         var waystoneBlocks = arrayOf(Material.DEEPSLATE_BRICK_WALL, Material.LODESTONE, Material.CRYING_OBSIDIAN, Material.DEEPSLATE_BRICK_SLAB, Material.AIR, Material.CAVE_AIR)

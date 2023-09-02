@@ -1,13 +1,15 @@
-package dev.wbell.terrariateleporter
+package dev.wbell.waystones
 
 import com.google.gson.Gson
+import org.bukkit.Bukkit
+import org.bukkit.Location
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.io.IOException
 import java.util.*
 
-class waystonePosition {
+class WaystonePosition {
     val positions: List<WayStoneData>
         get() = Companion.positions
 
@@ -38,8 +40,10 @@ class waystonePosition {
             return null
         }
 
-        fun addWaystone(position: PositionData, name: String) {
-            positions.add(WayStoneData(position, name))
+        fun addWaystone(position: PositionData, name: String, owner: String?) {
+            val id = "waystone-"+ UUID.randomUUID().toString()
+            positions.add(WayStoneData(position, name, id, owner))
+            WayStones.createHologram(id, Location(Bukkit.getWorld(position.world), position.x + 0.5, (position.y + 3), position.z + 0.5), listOf(name))
             savePositions()
         }
 
@@ -47,11 +51,13 @@ class waystonePosition {
             for (i in positions.indices) {
                 val pos = positions[i]
                 if (position.x == pos.pos.x && position.y == pos.pos.y && position.z == pos.pos.z) {
-                    positions[i] = WayStoneData(position, name)
+                    positions[i] = WayStoneData(position, name, pos.id, pos.owner)
+                    WayStones.editHologram(pos.id!!, 0, name)
                     savePositions()
                     return
                 }
             }
+            throw RuntimeException("Waystone not found")
         }
 
         fun removeWaystone(position: PositionData) {
@@ -59,10 +65,12 @@ class waystonePosition {
                 val pos = positions[i]
                 if (position.x == pos.pos.x && position.y == pos.pos.y && position.z == pos.pos.z) {
                     positions.removeAt(i)
+                    WayStones.deleteHologram(pos.id!!)
+                    savePositions()
                     return
                 }
             }
-            savePositions()
+            throw RuntimeException("Waystone not found")
         }
 
         fun getAllPositionNotIncluding(position: PositionData): List<WayStoneData> {
