@@ -24,10 +24,7 @@ class RenameWaystoneCommand : CommandExecutor {
         val location = sender.location
         var nearest: WayStoneData? = null
         for (waystone in WayStones.WaystonePosition.positions) {
-            if (waystone.name == newName) {
-                sender.sendMessage("A waystone with that name already exists")
-                return true
-            } else if (waystone.pos.world != location.world.name) {
+            if (waystone.pos.world != location.world.name) {
                 continue
             } else if (nearest == null) {
                 nearest = waystone

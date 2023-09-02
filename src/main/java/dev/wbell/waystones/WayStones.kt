@@ -21,7 +21,7 @@ class WayStones : JavaPlugin() {
         // make all the folders
         File(dataFolder.absolutePath).mkdirs()
         dev.wbell.waystones.WaystonePosition.loadPositions(File(dataFolder.absolutePath, "waystones.json"))
-        PluginConfigFIle.loadConfig(config, File(dataFolder.absolutePath, "config.yml"))
+        PluginConfigFile.loadConfig(config, File(dataFolder.absolutePath, "config.yml"))
         holograms = config.getBoolean("holograms")
         ambiantSound = Sound.valueOf(config.getString("ambiant-sound")!!)
     }

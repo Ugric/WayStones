@@ -2,7 +2,7 @@ package dev.wbell.waystones
 
 import java.io.File
 
-class PluginConfigFIle {
+class PluginConfigFile {
     companion object {
         fun loadConfig(config: org.bukkit.configuration.file.FileConfiguration, file: File): org.bukkit.configuration.file.FileConfiguration {
             // load file if exists
