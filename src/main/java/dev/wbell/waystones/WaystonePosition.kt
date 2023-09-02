@@ -43,7 +43,7 @@ class WaystonePosition {
         fun addWaystone(position: PositionData, name: String, owner: String?) {
             val id = "waystone-"+ UUID.randomUUID().toString()
             positions.add(WayStoneData(position, name, id, owner))
-            Holograms.createHologram(id, Location(Bukkit.getWorld(position.world), position.x + 0.5, (position.y + 3), position.z + 0.5), listOf(name))
+            Holograms.createHologram(id, Location(Bukkit.getWorld(position.world), position.x + 0.5, (position.y + 3), position.z + 0.5), name)
             savePositions()
         }
 

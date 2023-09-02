@@ -16,3 +16,6 @@ permissions:
   waystones.create:
     description: Allows players to create Waystones
     default: op
+  waystones.use:
+    description: Allows players to use Waystones
+    default: op

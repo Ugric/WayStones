@@ -13,7 +13,6 @@ class WayStones : JavaPlugin() {
         instance = this
         running = true
         val endCrystalRightClickListener = EndCrystalRightClickListener()
-        EndCrystalRightClickListener.owningPluginInstance = this
         server.pluginManager.registerEvents(endCrystalRightClickListener, this)
         getCommand("renamewaystone")!!.setExecutor(RenameWaystoneCommand())
         File(dataFolder.absolutePath).mkdirs()
