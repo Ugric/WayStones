@@ -20,7 +20,7 @@ class PluginConfigFile {
             config.addDefault("explosion-on-creation", true)
             config.addDefault("explosion-on-destruction", true)
             config.addDefault("ambiant-sound", "BLOCK_PORTAL_AMBIENT")
-
+            config.addDefault("ambiant-particles", "PORTAL")
 
             config.options().copyDefaults(true)
 
@@ -40,6 +40,7 @@ class PluginConfigFile {
             config.setComments("explosion-on-creation", MutableList(1) { "create explosion when a waystone is created" })
             config.setComments("explosion-on-destruction", MutableList(1) { "create explosion when a waystone is destroyed" })
             config.setComments("ambiant-sound", MutableList(1) { "the ambiant sound that is played to a player when they are nearby" })
+            config.setComments("ambiant-particles", MutableList(1) { "the ambiant particles that are made when a player is nearby" })
 
             saveConfig(config, file)
             return config

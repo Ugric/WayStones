@@ -26,9 +26,9 @@ import kotlin.math.sqrt
 class EndCrystalRightClickListener : Listener {
 
     fun playerNearbyHandler() {
+        if (WayStones.ambiantSound != null) {
         thread {
             while (WayStones.running) {
-                Thread.sleep(((Math.random() * 5000) + 5000).toLong())
                 for (waystone in WaystonePosition.positions) {
                     val world = Bukkit.getWorld(waystone.pos.world)
                     if (world == null) {
@@ -41,15 +41,16 @@ class EndCrystalRightClickListener : Listener {
                         if (distance <= 10) {
                             val pitch = (Math.random() / 2).toFloat()
                             val speed = (Math.random() / 2).toFloat()
-                            player.playSound(location, WayStones.ambiantSound, speed, pitch)
+                            player.playSound(location, WayStones.ambiantSound!!, speed, pitch)
                         }
                     }
                 }
+                Thread.sleep(((Math.random() * 5000) + 5000).toLong())
             }
-        }
+        }}
+        if (WayStones.ambiantParticles != null) {
         thread {
             while (WayStones.running) {
-                Thread.sleep(((Math.random() * 500) + 1000).toLong())
                 for (waystone in WaystonePosition.positions) {
                     val world = Bukkit.getWorld(waystone.pos.world)
                     if (world == null) {
@@ -67,9 +68,10 @@ class EndCrystalRightClickListener : Listener {
                     }
                     if (!playerNearby) continue
 
-                    world.spawnParticle(Particle.PORTAL, location, 100, 0.5, 0.5, 0.5)
+                    world.spawnParticle(WayStones.ambiantParticles!!, location, 100, 0.5, 0.5, 0.5)
                 }
-            }
+                Thread.sleep(((Math.random() * 500) + 1000).toLong())
+            }}
         }
     }
 

@@ -43,7 +43,7 @@ class WaystonePosition {
         fun addWaystone(position: PositionData, name: String, owner: String?) {
             val id = "waystone-"+ UUID.randomUUID().toString()
             positions.add(WayStoneData(position, name, id, owner))
-            WayStones.createHologram(id, Location(Bukkit.getWorld(position.world), position.x + 0.5, (position.y + 3), position.z + 0.5), listOf(name))
+            Holograms.createHologram(id, Location(Bukkit.getWorld(position.world), position.x + 0.5, (position.y + 3), position.z + 0.5), listOf(name))
             savePositions()
         }
 
@@ -52,7 +52,7 @@ class WaystonePosition {
                 val pos = positions[i]
                 if (position.x == pos.pos.x && position.y == pos.pos.y && position.z == pos.pos.z) {
                     positions[i] = WayStoneData(position, name, pos.id, pos.owner)
-                    WayStones.editHologram(pos.id!!, 0, name)
+                    Holograms.editHologram(pos.id!!, 0, name)
                     savePositions()
                     return
                 }
@@ -65,7 +65,7 @@ class WaystonePosition {
                 val pos = positions[i]
                 if (position.x == pos.pos.x && position.y == pos.pos.y && position.z == pos.pos.z) {
                     positions.removeAt(i)
-                    WayStones.deleteHologram(pos.id!!)
+                    Holograms.deleteHologram(pos.id!!)
                     savePositions()
                     return
                 }
