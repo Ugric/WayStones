@@ -1,37 +1,42 @@
 package dev.wbell.waystones
 
 import eu.decentsoftware.holograms.api.DHAPI
+import eu.decentsoftware.holograms.api.DecentHologramsAPI
 import org.bukkit.Bukkit
 import org.bukkit.Location
 
 class Holograms {
     companion object {
 
-        fun enable() {
-            if (WayStones.holograms) {
-                for (waystones in WaystonePosition.positions) {
-                    createHologram(waystones.id!!, Location(Bukkit.getWorld(waystones.pos.world), waystones.pos.x + 0.5, (waystones.pos.y + 3), waystones.pos.z + 0.5), waystones.name)
+        fun runEnable() {
+            for (waystone in WayStones.WaystonePosition.positions) {
+                try {
+                    createHologram(waystone.id!!, Location(Bukkit.getWorld(waystone.pos.world), waystone.pos.x + 0.5, (waystone.pos.y + 3), waystone.pos.z + 0.5), waystone.name)
+                } catch (_: Exception) {
+                    // ignore
                 }
             }
+            WayStones.instance.logger.info("Holograms have been enabled")
         }
-        fun disable() {
-            for (waystones in WaystonePosition.positions) {
+
+        fun enableHolograms() {
+            if (WayStones.holograms) {
                 try {
-                    DHAPI.removeHologram(waystones.id!!)
+                    val pluginEnabled = DecentHologramsAPI.isRunning()
+                    if (pluginEnabled) {
+                        runEnable()
+                        return
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
+                    WayStones.holograms = false
                 }
             }
-
         }
 
         fun createHologram(name: String, location: Location, text: String) {
             if (WayStones.holograms) {
-                try {
-                    DHAPI.createHologram(name, location, listOf("&5&l$text"))
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                DHAPI.createHologram(name, location, listOf("&5&l$text"))
             }
         }
 

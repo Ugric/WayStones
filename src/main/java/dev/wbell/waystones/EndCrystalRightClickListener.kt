@@ -16,16 +16,27 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.server.PluginEnableEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.metadata.FixedMetadataValue
-import java.util.UUID
+import java.util.*
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 
 class EndCrystalRightClickListener : Listener {
+
+
+    @EventHandler
+    fun onPluginEnable(event: PluginEnableEvent) {
+        if (!WayStones.holograms) return
+        val enabledPlugin = event.plugin
+        if (enabledPlugin.name == "DecentHolograms") {
+            Holograms.runEnable()
+        }
+    }
 
     fun playerNearbyHandler() {
         if (WayStones.ambiantSound != null) {

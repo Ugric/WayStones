@@ -36,14 +36,13 @@ class WayStones : JavaPlugin() {
             }
         }
         endCrystalRightClickListener.playerNearbyHandler()
-        Holograms.enable()
+        Holograms.enableHolograms()
     }
 
     override fun onDisable() {
         dev.wbell.waystones.WaystonePosition.savePositions()
         // Plugin shutdown logic
         logger.info("WayStones has been disabled")
-        Holograms.disable()
         running = false
     }
 
