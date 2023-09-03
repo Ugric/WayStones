@@ -1,0 +1,28 @@
+# enable holograms (requires DecentHolograms)
+holograms: true
+
+# require permissions to create waystones
+creation-permissions: false
+# require permissions to use waystones
+usage-permissions: false
+
+# strike lightning on teleported location
+lightning-on-travel: true
+# strike lightning where the player teleported from
+lightning-at-travelled-from-place: true
+# strike lightning when a waystone is created
+lightning-on-creation: true
+# strike lightning when a waystone is destroyed
+lightning-on-destruction: true
+
+# create explosion on teleported location
+explosion-on-travel: true
+# create explosion when a waystone is created
+explosion-on-creation: true
+# create explosion when a waystone is destroyed
+explosion-on-destruction: false
+
+# the ambiant sound that is played to a player when they are nearby
+ambiant-sound: BLOCK_PORTAL_AMBIENT
+# the ambiant particles that are made when a player is nearby
+ambiant-particles: PORTAL
