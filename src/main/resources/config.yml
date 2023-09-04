@@ -1,5 +1,5 @@
 # enable holograms (requires DecentHolograms)
-holograms: true
+holograms: false
 
 # require permissions to create waystones
 creation-permissions: false

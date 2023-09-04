@@ -4,6 +4,7 @@ author: 'Ugric'
 description: 'A plugin that adds waystones to your server, allowing players to teleport between them.'
 main: dev.wbell.waystones.WayStones
 api-version: '1.20'
+softdepend: [DecentHolograms]
 commands:
   renamewaystone:
     description: 'Renames a waystone.'
