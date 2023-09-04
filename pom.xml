@@ -19,7 +19,7 @@
 
     <build>
         <defaultGoal>clean install</defaultGoal>
-        <finalName>WayStones-${version}</finalName>
+        <finalName>WayStones-${project.version}</finalName>
         <sourceDirectory>${basedir}/src</sourceDirectory>
 
         <plugins>
