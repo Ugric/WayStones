@@ -25,13 +25,13 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.*
 import kotlin.concurrent.thread
-import kotlin.math.ceil
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 
 class EndCrystalRightClickListener : Listener {
     private val teleportingPlayers = HashSet<UUID>()
+    private val currentPage = HashMap<UUID, Int>()
 
 
     @EventHandler
@@ -161,6 +161,7 @@ class EndCrystalRightClickListener : Listener {
             return
         }
 
+
 // Consume the item
         player.inventory.removeItem(ItemStack(Material.ENDER_EYE, 1))
         player.sendMessage("${ChatColor.GREEN}ใช้ 1 ENDER_EYE แล้วในการวาร์ป")
@@ -213,28 +214,34 @@ class EndCrystalRightClickListener : Listener {
                 teleportingPlayers.remove(player.uniqueId)
             }
         }, 60L) // Change 60L to adjust the delay in ticks. 20 ticks = 1 second
+        // Check if the player clicked the navigation buttons
+        if (event.slot == event.inventory.size - 9) {
+            // Previous Page Button
+            navigatePages(player, holder.positions, positions[0], -1)
+            return
+        } else if (event.slot == event.inventory.size - 1) {
+            // Next Page Button
+            navigatePages(player, holder.positions, positions[0], 1)
+            return
+        }
     }
 
     private fun openChestGUI(player: Player, positions: List<WayStoneData>, position: WayStoneData, page: Int) {
-        val itemsPerPage = 45 // Number of items to display per page (excluding page navigation items)
-        val totalPages = ceil(positions.size.toDouble() / itemsPerPage).toInt()
+        // Calculate the starting and ending index for the current page
+        val pageSize = 45 // Number of slots in the inventory minus 9 for navigation buttons
+        val startIndex = page * pageSize
+        val endIndex = minOf(startIndex + pageSize, positions.size)
 
-        if (page < 0 || page >= totalPages) {
-            // Invalid page number, handle this as needed
-            return
-        }
-
-        val startIndex = page * itemsPerPage
-        val endIndex = minOf((page + 1) * itemsPerPage, positions.size)
-
+        // Create the inventory
         val holder = ChestGUIHolder()
-        holder.positions.addAll(positions)
-        val inventory = Bukkit.createInventory(holder, 54, LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${position.name} (Page ${page + 1}/$totalPages)"))
+        holder.positions.addAll(positions.subList(startIndex, endIndex))
+        val inventory = Bukkit.createInventory(holder, 54, LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${position.name}"))
 
-        // Fill the chest GUI with items for the current page
-        for (i in startIndex until endIndex) {
-            val item = ItemStack(positions[i].rngBlock ?: Material.END_CRYSTAL) // Use the rngBlock, default to END_CRYSTAL
-            val meta = item.itemMeta
+        // Fill the inventory with waystones for the current page
+        for (i in 0 until inventory.size - 9) {
+            if (i < holder.positions.size) {
+                val item = ItemStack(holder.positions[i].rngBlock ?: Material.END_CRYSTAL)
+                val meta = item.itemMeta
                 var lore: MutableList<Component>? = meta.lore()
                 if (lore == null) {
                     lore = ArrayList()
@@ -258,33 +265,59 @@ class EndCrystalRightClickListener : Listener {
                 meta.lore(lore)
                 meta.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${positions[i].name}"))
                 item.itemMeta = meta
-                inventory.setItem(i - startIndex, item) // Adjust the index based on the current page
+                inventory.setItem(i, item)
+            } else {
+                val item = ItemStack(Material.GRAY_STAINED_GLASS_PANE)
+                val meta = item.itemMeta
+                meta.displayName(Component.text(" "))
+                item.itemMeta = meta
+                inventory.setItem(i, item)
             }
-
-            // Add page navigation items (previous and next page buttons)
-            if (page > 0) {
-                // Add previous page button
-                val prevPageItem = ItemStack(Material.ARROW)
-                val prevPageMeta = prevPageItem.itemMeta
-                prevPageMeta.displayName(Component.text("Previous Page"))
-                prevPageItem.itemMeta = prevPageMeta
-                inventory.setItem(45, prevPageItem)
-            }
-
-            if (page < totalPages - 1) {
-                // Add next page button
-                val nextPageItem = ItemStack(Material.ARROW)
-                val nextPageMeta = nextPageItem.itemMeta
-                nextPageMeta.displayName(Component.text("Next Page"))
-                nextPageItem.itemMeta = nextPageMeta
-                inventory.setItem(53, nextPageItem)
-            }
-
-            player.openInventory(inventory)
         }
 
+        if (page > 0) {
+            val prevPageItem = ItemStack(Material.ARROW)
+            val prevPageMeta = prevPageItem.itemMeta
+            prevPageMeta.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize("&bPrevious Page"))
+            prevPageItem.itemMeta = prevPageMeta
+            inventory.setItem(inventory.size - 9, prevPageItem)
+        }
 
-        private class ChestGUIHolder : org.bukkit.inventory.InventoryHolder {
+        if (endIndex < positions.size) {
+            val nextPageItem = ItemStack(Material.ARROW)
+            val nextPageMeta = nextPageItem.itemMeta
+            nextPageMeta.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize("&bNext Page"))
+            nextPageItem.itemMeta = nextPageMeta
+            inventory.setItem(inventory.size - 1, nextPageItem)
+        }
+
+        player.openInventory(inventory)
+    }
+    private fun navigatePages(player: Player, positions: List<WayStoneData>, position: WayStoneData, pageChange: Int) {
+        val playerId = player.uniqueId
+        val current = currentPage[playerId] ?: 0
+        val newPage = current + pageChange
+
+        // Ensure the new page is within bounds
+        val maxPage = (positions.size - 1) / 45 // Calculate the maximum page based on the number of waystones
+        if (newPage < 0) {
+            // Prevent going to a negative page
+            return
+        } else if (newPage > maxPage) {
+            // Prevent going beyond the last page
+            return
+        }
+
+        // Update the current page for the player
+        currentPage[playerId] = newPage
+
+        // Open the updated inventory
+        openChestGUI(player, positions, position, newPage)
+    }
+
+
+
+    private class ChestGUIHolder : org.bukkit.inventory.InventoryHolder {
         public val positions = ArrayList<WayStoneData>()
         val page = 0
         override fun getInventory(): Inventory {
@@ -328,7 +361,6 @@ class EndCrystalRightClickListener : Listener {
 
     @EventHandler
     fun onPlayerInteract(event: PlayerInteractEvent) {
-
         val player = event.player
         val block = event.clickedBlock ?: return
         val location = block.location
@@ -350,8 +382,7 @@ class EndCrystalRightClickListener : Listener {
             )
 
             if (WayStones.instance.config.getBoolean("usage-permissions") && !player.hasPermission("waystones.use")) return // Simple permissions check
-            val page = 0 // You can initialize the page to 0 initially
-            openChestGUI(player, positions, currentWaystone, page)
+            openChestGUI(player, positions, currentWaystone, currentPage[player.uniqueId] ?: 0)
             return
         }
         if (WayStones.instance.config.getBoolean("creation-permissions") && !player.hasPermission("waystones.create")) return // Simple permissions check
