@@ -144,11 +144,24 @@ class EndCrystalRightClickListener : Listener {
         if (clickedInventory.holder !is ChestGUIHolder) return
         event.isCancelled = true
         val player = event.whoClicked as Player
+        val holder = clickedInventory.holder as ChestGUIHolder
 
         if (teleportingPlayers.contains(player.uniqueId)) {
             player.closeInventory()
             player.sendMessage("${ChatColor.RED}คุณกำลังอยู่ในการวาร์ป")
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f)
+            return
+        }
+
+        if (event.slot == 45 && holder.page > 0) {
+            // Previous page button clicked
+            openChestGUI(player, holder.positions, holder.positions[0], holder.page - 1)
+            return
+        }
+
+        if (event.slot == 53 && holder.page < holder.positions.size / 45) {
+            // Next page button clicked
+            openChestGUI(player, holder.positions, holder.positions[0], holder.page + 1)
             return
         }
 
@@ -167,7 +180,6 @@ class EndCrystalRightClickListener : Listener {
         player.closeInventory()
 
         val clickedSlot = event.slot
-        val holder = clickedInventory.holder as ChestGUIHolder
         val positions = holder.positions
         if (clickedSlot >= positions.size) return
         val position = positions[clickedSlot]
@@ -217,67 +229,67 @@ class EndCrystalRightClickListener : Listener {
     private fun openChestGUI(player: Player, positions: List<WayStoneData>, position: WayStoneData, page: Int) {
         val holder = ChestGUIHolder()
         holder.positions.addAll(positions)
-        holder.currentPage = page
-        val inventory = Bukkit.createInventory(holder, 54, LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${position.name}"))
+        holder.page = page // Set the current page
+        val inventory = Bukkit.createInventory(holder, 54, LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${position.name} (Page $page)"))
 
-        val startIndex = page * holder.itemsPerPage
-        val endIndex = minOf((page + 1) * holder.itemsPerPage, positions.size)
+        val startIndex = page * 45
+        val endIndex = Math.min(startIndex + 45, positions.size)
 
-        // Fill the chest GUI with some items on the current page
         for (i in startIndex until endIndex) {
+            val indexInInventory = i - startIndex
             val item = ItemStack(positions[i].rngBlock ?: Material.END_CRYSTAL) // Use the rngBlock, default to END_CRYSTAL
-            val meta = item.itemMeta
-            var lore: MutableList<Component>? = meta.lore()
-            if (lore == null) {
-                lore = ArrayList()
-            }
-            lore.add(Component.text(" "))
-            if (positions[i].owner != null) {
-                lore.add(Component.text("สร้างโดย: ${Bukkit.getOfflinePlayer(UUID.fromString(positions[i].owner)).name}").color(NamedTextColor.GRAY))
-            }
-            if (positions[i].pos.world != position.pos.world) {
-                val worldColor = when(positions[i].pos.world) {
-                    "world" -> NamedTextColor.GREEN
-                    "world_nether" -> NamedTextColor.RED
-                    "world_the_end" -> NamedTextColor.LIGHT_PURPLE
-                    else -> NamedTextColor.GRAY // default color if neither of the above
+                val meta = item.itemMeta
+                var lore: MutableList<Component>? = meta.lore()
+                if (lore == null) {
+                    lore = ArrayList()
                 }
-                lore.add(Component.text("โลก: ${positions[i].pos.world} (${positions[i].pos.x.toInt()}, ${positions[i].pos.y.toInt()}, ${positions[i].pos.z.toInt()})").color(worldColor))
-            } else {
-                lore.add(Component.text("ระยะ: ${distance(position.pos, positions[i].pos).toInt()} บล็อก (${positions[i].pos.x.toInt()}, ${positions[i].pos.y.toInt()}, ${positions[i].pos.z.toInt()})").color(NamedTextColor.AQUA))
-            }
-            meta.lore(lore)
-            meta.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${positions[i].name}"))
-            item.itemMeta = meta
-            inventory.setItem(i - startIndex, item)
+                lore.add(Component.text(" "))
+                if (positions[i].owner != null) {
+                    lore.add(Component.text("สร้างโดย: ${Bukkit.getOfflinePlayer(UUID.fromString(positions[i].owner)).name}").color(NamedTextColor.GRAY))
+                }
+                if (positions[i].pos.world != position.pos.world) {
+                    val worldColor = when(positions[i].pos.world) {
+                        "world" -> NamedTextColor.GREEN
+                        "world_nether" -> NamedTextColor.RED
+                        "world_the_end" -> NamedTextColor.LIGHT_PURPLE
+                        else -> NamedTextColor.GRAY // default color if neither of the above
+                    }
+                    lore.add(Component.text("โลก: ${positions[i].pos.world} (${positions[i].pos.x.toInt()}, ${positions[i].pos.y.toInt()}, ${positions[i].pos.z.toInt()})").color(worldColor))
+                } else {
+                    //lore.add(Component.text("ระยะ: ${distance(position.pos, positions[i].pos).toInt()} blocks").color(NamedTextColor.AQUA))
+                    lore.add(Component.text("ระยะ: ${distance(position.pos, positions[i].pos).toInt()} บล็อก (${positions[i].pos.x.toInt()}, ${positions[i].pos.y.toInt()}, ${positions[i].pos.z.toInt()})").color(NamedTextColor.AQUA))
+                }
+                meta.lore(lore)
+                meta.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${positions[i].name}"))
+                item.itemMeta = meta
+            inventory.setItem(indexInInventory, item)
         }
 
-        // Add navigation buttons (Previous and Next)
-        if (page > 0) {
-            val previousButton = ItemStack(Material.ARROW)
-            val previousMeta = previousButton.itemMeta
-            previousMeta.displayName(Component.text("กลับหน้าก่อนหน้า", NamedTextColor.YELLOW))
-            previousButton.itemMeta = previousMeta
-            inventory.setItem(45, previousButton)
+        // Add pagination buttons if needed
+        if (startIndex > 0) {
+            // Add a previous page button
+            val prevPageItem = ItemStack(Material.ARROW)
+            val prevPageMeta = prevPageItem.itemMeta
+            prevPageMeta.displayName(Component.text("Previous Page").color(NamedTextColor.RED))
+            prevPageItem.itemMeta = prevPageMeta
+            inventory.setItem(45, prevPageItem)
         }
 
         if (endIndex < positions.size) {
-            val nextButton = ItemStack(Material.ARROW)
-            val nextMeta = nextButton.itemMeta
-            nextMeta.displayName(Component.text("ไปหน้าถัดไป", NamedTextColor.YELLOW))
-            nextButton.itemMeta = nextMeta
-            inventory.setItem(53, nextButton)
+            // Add a next page button
+            val nextPageItem = ItemStack(Material.ARROW)
+            val nextPageMeta = nextPageItem.itemMeta
+            nextPageMeta.displayName(Component.text("Next Page").color(NamedTextColor.GREEN))
+            nextPageItem.itemMeta = nextPageMeta
+            inventory.setItem(53, nextPageItem)
         }
 
         player.openInventory(inventory)
     }
 
-
     private class ChestGUIHolder : org.bukkit.inventory.InventoryHolder {
         public val positions = ArrayList<WayStoneData>()
-        var currentPage = 0
-        val itemsPerPage = 45 // Maximum items per page (54 slots - 9 for navigation)
-
+        var page = 0 // Add a variable to track the current page
         override fun getInventory(): Inventory {
             return inventory
         }
@@ -341,8 +353,7 @@ class EndCrystalRightClickListener : Listener {
             )
 
             if (WayStones.instance.config.getBoolean("usage-permissions") && !player.hasPermission("waystones.use")) return // Simple permissions check
-            val page = 0 // Set the initial page
-            openChestGUI(player, positions, currentWaystone, page)
+            openChestGUI(player, positions, currentWaystone,0)
             return
         }
         if (WayStones.instance.config.getBoolean("creation-permissions") && !player.hasPermission("waystones.create")) return // Simple permissions check
