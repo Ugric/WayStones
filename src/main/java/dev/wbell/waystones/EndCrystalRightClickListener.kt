@@ -172,6 +172,7 @@ class EndCrystalRightClickListener : Listener {
                 firework.fireworkMeta = fireworkMeta
                 firework.setMetadata("nodamage", FixedMetadataValue(WayStones.instance, true))
                 firework.detonate()
+                player.closeInventory()
             }
             player.playSound(effectLocation, Sound.ENTITY_WARDEN_ROAR, 1.0f, 1.0f)
         }, {
