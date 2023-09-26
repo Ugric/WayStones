@@ -145,6 +145,23 @@ class EndCrystalRightClickListener : Listener {
         if (clickedInventory.holder !is ChestGUIHolder) return
         event.isCancelled = true
         val player = event.whoClicked as Player
+        val clickedSlot = event.slot
+        val holder = clickedInventory.holder as ChestGUIHolder
+        val positions = holder.positions
+        if (clickedSlot >= positions.size) return
+        val position = positions[clickedSlot]
+        val teleportLocation = Location(Bukkit.getWorld(position.pos.world), position.pos.x + 0.5, position.pos.y, position.pos.z - 0.5)
+        val effectLocation = Location(Bukkit.getWorld(position.pos.world), position.pos.x + 0.5, position.pos.y + 2, position.pos.z + 0.5)
+        // Check if the player clicked the navigation buttons
+        if (event.slot == event.inventory.size - 9) {
+            // Previous Page Button
+            navigatePages(player, holder.positions, positions[0], -1)
+            return
+        } else if (event.slot == event.inventory.size - 1) {
+            // Next Page Button
+            navigatePages(player, holder.positions, positions[0], 1)
+            return
+        }
 
         if (teleportingPlayers.contains(player.uniqueId)) {
             player.closeInventory()
@@ -167,14 +184,6 @@ class EndCrystalRightClickListener : Listener {
         player.sendMessage("${ChatColor.GREEN}ใช้ 1 ENDER_EYE แล้วในการวาร์ป")
         player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_FLUTE, 1.0f, 1.0f)
         player.closeInventory()
-
-        val clickedSlot = event.slot
-        val holder = clickedInventory.holder as ChestGUIHolder
-        val positions = holder.positions
-        if (clickedSlot >= positions.size) return
-        val position = positions[clickedSlot]
-        val teleportLocation = Location(Bukkit.getWorld(position.pos.world), position.pos.x + 0.5, position.pos.y, position.pos.z - 0.5)
-        val effectLocation = Location(Bukkit.getWorld(position.pos.world), position.pos.x + 0.5, position.pos.y + 2, position.pos.z + 0.5)
 
         // Add the player to the teleporting set
         teleportingPlayers.add(player.uniqueId)
@@ -214,16 +223,7 @@ class EndCrystalRightClickListener : Listener {
                 teleportingPlayers.remove(player.uniqueId)
             }
         }, 60L) // Change 60L to adjust the delay in ticks. 20 ticks = 1 second
-        // Check if the player clicked the navigation buttons
-        if (event.slot == event.inventory.size - 9) {
-            // Previous Page Button
-            navigatePages(player, holder.positions, positions[0], -1)
-            return
-        } else if (event.slot == event.inventory.size - 1) {
-            // Next Page Button
-            navigatePages(player, holder.positions, positions[0], 1)
-            return
-        }
+
     }
 
     private fun openChestGUI(player: Player, positions: List<WayStoneData>, position: WayStoneData, page: Int) {
