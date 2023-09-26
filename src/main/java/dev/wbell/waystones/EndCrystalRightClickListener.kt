@@ -21,6 +21,8 @@ import org.bukkit.event.server.PluginEnableEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.metadata.FixedMetadataValue
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 import java.util.*
 import kotlin.concurrent.thread
 import kotlin.math.pow
@@ -28,6 +30,7 @@ import kotlin.math.sqrt
 
 
 class EndCrystalRightClickListener : Listener {
+    private val teleportingPlayers = HashSet<UUID>()
 
 
     @EventHandler
@@ -139,8 +142,30 @@ class EndCrystalRightClickListener : Listener {
     fun onInventoryClick(event: InventoryClickEvent) {
         val clickedInventory = event.clickedInventory ?: return
         if (clickedInventory.holder !is ChestGUIHolder) return
-        event.isCancelled = true // Prevent item moving or clicking
+        event.isCancelled = true
         val player = event.whoClicked as Player
+
+        if (teleportingPlayers.contains(player.uniqueId)) {
+            player.closeInventory()
+            player.sendMessage("คุณกำลังอยู่ในการวาร์ป")
+            player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f)
+            return
+        }
+
+        // Check if the player has the item
+        if (!player.inventory.contains(Material.SCULK)) {
+            player.closeInventory()
+            player.sendMessage("คุณต้องมี Sculk เพื่อใช้งานเสาวาร์ป")
+            player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO, 1.0f, 1.0f)
+            return
+        }
+
+        // Consume the item
+        player.inventory.removeItem(ItemStack(Material.SCULK, 1))
+        player.sendMessage("ใช้ 1 Sculk แล้วในการวาร์ป")
+        player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_FLUTE, 1.0f, 1.0f)
+        player.closeInventory()
+
         val clickedSlot = event.slot
         val holder = clickedInventory.holder as ChestGUIHolder
         val positions = holder.positions
@@ -148,30 +173,45 @@ class EndCrystalRightClickListener : Listener {
         val position = positions[clickedSlot]
         val teleportLocation = Location(Bukkit.getWorld(position.pos.world), position.pos.x + 0.5, position.pos.y, position.pos.z - 0.5)
         val effectLocation = Location(Bukkit.getWorld(position.pos.world), position.pos.x + 0.5, position.pos.y + 2, position.pos.z + 0.5)
-        if (WayStones.instance.config.getBoolean("lightning-at-travelled-from-place")) player.world.strikeLightningEffect(player.location)
-        player.teleportAsync(teleportLocation)
-        Scheduler.runTaskForEntity(player, WayStones.instance, {
-        val world = effectLocation.world
-        if (WayStones.instance.config.getBoolean("lightning-on-travel")) world.strikeLightningEffect(effectLocation)
-        if (WayStones.instance.config.getBoolean("explosion-on-travel")) {
-            val firework = world.spawn(effectLocation, Firework::class.java)
 
-            // Create firework meta
-            val fireworkMeta = firework.fireworkMeta
+        // Add the player to the teleporting set
+        teleportingPlayers.add(player.uniqueId)
 
-            // Create a firework effect with a purple color
-            val effect = FireworkEffect.builder().flicker(true).trail(true).withColor(Color.PURPLE).with(FireworkEffect.Type.BALL_LARGE).build()
+        // Delay the teleport
+        Scheduler.runTaskForEntity(player, WayStones.instance, Runnable {
+            if (WayStones.instance.config.getBoolean("lightning-at-travelled-from-place")) player.world.strikeLightningEffect(player.location)
+            player.teleportAsync(teleportLocation).thenRun {
+                val world = effectLocation.world
+                if (WayStones.instance.config.getBoolean("lightning-on-travel")) world.strikeLightningEffect(effectLocation)
+                if (WayStones.instance.config.getBoolean("explosion-on-travel")) {
+                    val firework = world.spawn(effectLocation, Firework::class.java)
 
-            // Add the effect to the firework
-            fireworkMeta.addEffect(effect)
+                    // Create firework meta
+                    val fireworkMeta = firework.fireworkMeta
 
-            // Set the firework meta and detonate it immediately
-            firework.fireworkMeta = fireworkMeta
-            firework.setMetadata("nodamage", FixedMetadataValue(WayStones.instance, true))
-            firework.detonate()
-        }
-        player.playSound(effectLocation, Sound.ENTITY_WARDEN_ROAR, 1.0f, 1.0f)
-        }, 1L)
+                    // Create a firework effect with a purple color
+                    val effect = FireworkEffect.builder().flicker(true).trail(true).withColor(Color.PURPLE).with(FireworkEffect.Type.BALL_LARGE).build()
+
+                    // Add the effect to the firework
+                    fireworkMeta.addEffect(effect)
+
+                    // Set the firework meta and detonate it immediately
+                    firework.fireworkMeta = fireworkMeta
+                    firework.setMetadata("nodamage", FixedMetadataValue(WayStones.instance, true))
+                    firework.detonate()
+
+                    //effect to player
+                    val glowing = PotionEffectType.GLOWING
+                    val effectDarkness = PotionEffectType.DARKNESS
+                    player.addPotionEffect(PotionEffect(glowing, 60, 0, true))
+                    player.addPotionEffect(PotionEffect(effectDarkness, 60, 0, true))
+                }
+                player.playSound(effectLocation, Sound.ENTITY_WARDEN_ROAR, 1.0f, 1.0f)
+
+                // Remove the player from the teleporting set after teleportation is done
+                teleportingPlayers.remove(player.uniqueId)
+            }
+        }, 60L) // Change 60L to adjust the delay in ticks. 20 ticks = 1 second
     }
 
     private fun openChestGUI(player: Player, positions: List<WayStoneData>, position: WayStoneData) {
