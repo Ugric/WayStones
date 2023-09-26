@@ -35,6 +35,13 @@
                         </goals>
                         <configuration>
                                 <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <relocations>
+                                <!-- Add the following relocation to prevent potential conflicts -->
+                                <relocation>
+                                    <pattern>org.jetbrains.kotlin</pattern>
+                                    <shadedPattern>dev.wbell.shaded.kotlin</shadedPattern>
+                                </relocation>
+                            </relocations>
                         </configuration>
                     </execution>
                 </executions>
