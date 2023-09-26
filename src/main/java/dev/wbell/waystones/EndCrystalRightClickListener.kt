@@ -296,10 +296,10 @@ class EndCrystalRightClickListener : Listener {
     private fun navigatePages(player: Player, positions: List<WayStoneData>, position: WayStoneData, pageChange: Int) {
         val playerId = player.uniqueId
         val current = currentPage[playerId] ?: 0
+        val maxPage = (positions.size - 1) / 45
         val newPage = current + pageChange
 
         // Ensure the new page is within bounds
-        val maxPage = (positions.size - 1) / 45 // Calculate the maximum page based on the number of waystones
         if (newPage < 0) {
             // Prevent going to a negative page
             return
@@ -314,6 +314,7 @@ class EndCrystalRightClickListener : Listener {
         // Open the updated inventory
         openChestGUI(player, positions, position, newPage)
     }
+
 
 
 
