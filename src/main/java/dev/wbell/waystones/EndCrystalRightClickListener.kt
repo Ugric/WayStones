@@ -32,7 +32,6 @@ import kotlin.math.sqrt
 
 class EndCrystalRightClickListener : Listener {
     private val teleportingPlayers = HashSet<UUID>()
-    private var currentFilterMode: WaystoneFilterMode = WaystoneFilterMode.ALL
 
 
     @EventHandler
@@ -42,13 +41,6 @@ class EndCrystalRightClickListener : Listener {
         if (enabledPlugin.name == "DecentHolograms") {
             Holograms.runEnable()
         }
-    }
-    enum class WaystoneFilterMode {
-        OWNER_WAYSTONE,
-        OVERWORLD,
-        THE_END,
-        NETHER,
-        ALL // This can be used to display all Waystones without filtering
     }
 
     fun playerNearbyHandler() {
@@ -177,27 +169,18 @@ class EndCrystalRightClickListener : Listener {
         if (clickedSlot >= clickedInventory.size || clickedInventory.getItem(clickedSlot) == null) {
             return
         }
-        if (event.click.isShiftClick) {
-            event.isCancelled = true
-            return
-        }
 
         if (event.slot == 45 && holder.page > 0) {
             // Previous page button clicked
-            holder.page -= 1
-            openChestGUI(player, holder.positions, holder.positions[0], holder.page, currentFilterMode)
+            openChestGUI(player, holder.positions, holder.positions[0], holder.page - 1)
             return
         }
 
         if (event.slot == 53 && holder.page < holder.positions.size / 45) {
             // Next page button clicked
-            holder.page += 1
-            openChestGUI(player, holder.positions, holder.positions[0], holder.page, currentFilterMode)
+            openChestGUI(player, holder.positions, holder.positions[0], holder.page + 1)
             return
         }
-
-
-
 
 // Check if the player has the item
         if (!player.inventory.contains(Material.ENDER_EYE)) {
@@ -260,44 +243,42 @@ class EndCrystalRightClickListener : Listener {
         }, 60L) // Change 60L to adjust the delay in ticks. 20 ticks = 1 second
     }
 
-    private fun openChestGUI(player: Player, positions: List<WayStoneData>, position: WayStoneData, page: Int, filterMode: WaystoneFilterMode) {
+    private fun openChestGUI(player: Player, positions: List<WayStoneData>, position: WayStoneData, page: Int) {
         val holder = ChestGUIHolder()
         holder.positions.addAll(positions)
         holder.page = page // Set the current page
-        val inventoryTitle = when (filterMode) {
-            WaystoneFilterMode.OWNER_WAYSTONE -> "Owner Waystones - [Page $page]"
-            WaystoneFilterMode.OVERWORLD -> "Overworld Waystones - [Page $page]"
-            WaystoneFilterMode.THE_END -> "The End Waystones - [Page $page]"
-            WaystoneFilterMode.NETHER -> "Nether Waystones - [Page $page]"
-            WaystoneFilterMode.ALL -> "All Waystones - [Page $page]"
-        }
-        val inventory = Bukkit.createInventory(holder, 54, LegacyComponentSerializer.legacyAmpersand().deserialize(inventoryTitle))
+        val inventory = Bukkit.createInventory(holder, 54, LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${position.name} - [$page]"))
 
         val startIndex = page * 45
         val endIndex = Math.min(startIndex + 45, positions.size)
 
         for (i in startIndex until endIndex) {
-            val waystone = positions[i]
-
-            // Filter Waystones based on the selected filter mode
-            if (filterMode == WaystoneFilterMode.OWNER_WAYSTONE && waystone.owner == null) {
-                continue
-            } else if (filterMode == WaystoneFilterMode.OVERWORLD && waystone.pos.world != "world") {
-                continue
-            } else if (filterMode == WaystoneFilterMode.THE_END && waystone.pos.world != "world_the_end") {
-                continue
-            } else if (filterMode == WaystoneFilterMode.NETHER && waystone.pos.world != "world_nether") {
-                continue
-            }
-
             val indexInInventory = i - startIndex
-            val item = ItemStack(waystone.rngBlock ?: Material.END_CRYSTAL)
-            val meta = item.itemMeta
-
-            // Add item lore and display name here
-
-            meta.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${waystone.name}"))
-            item.itemMeta = meta
+            val item = ItemStack(positions[i].rngBlock ?: Material.END_CRYSTAL) // Use the rngBlock, default to END_CRYSTAL
+                val meta = item.itemMeta
+                var lore: MutableList<Component>? = meta.lore()
+                if (lore == null) {
+                    lore = ArrayList()
+                }
+                lore.add(Component.text(" "))
+                if (positions[i].owner != null) {
+                    lore.add(Component.text("สร้างโดย: ${Bukkit.getOfflinePlayer(UUID.fromString(positions[i].owner)).name}").color(NamedTextColor.GRAY))
+                }
+                if (positions[i].pos.world != position.pos.world) {
+                    val worldColor = when(positions[i].pos.world) {
+                        "world" -> NamedTextColor.GREEN
+                        "world_nether" -> NamedTextColor.RED
+                        "world_the_end" -> NamedTextColor.LIGHT_PURPLE
+                        else -> NamedTextColor.GRAY // default color if neither of the above
+                    }
+                    lore.add(Component.text("โลก: ${positions[i].pos.world} (${positions[i].pos.x.toInt()}, ${positions[i].pos.y.toInt()}, ${positions[i].pos.z.toInt()})").color(worldColor))
+                } else {
+                    //lore.add(Component.text("ระยะ: ${distance(position.pos, positions[i].pos).toInt()} blocks").color(NamedTextColor.AQUA))
+                    lore.add(Component.text("ระยะ: ${distance(position.pos, positions[i].pos).toInt()} บล็อก (${positions[i].pos.x.toInt()}, ${positions[i].pos.y.toInt()}, ${positions[i].pos.z.toInt()})").color(NamedTextColor.AQUA))
+                }
+                meta.lore(lore)
+                meta.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${positions[i].name}"))
+                item.itemMeta = meta
             inventory.setItem(indexInInventory, item)
         }
 
@@ -320,17 +301,8 @@ class EndCrystalRightClickListener : Listener {
             inventory.setItem(53, nextPageItem)
         }
 
-        val modeSelectionItem = ItemStack(Material.COMPASS)
-        val modeSelectionMeta = modeSelectionItem.itemMeta
-        modeSelectionMeta.displayName(
-            Component.text("Filter Mode: ${filterMode.name}", NamedTextColor.GRAY)
-        )
-        modeSelectionItem.itemMeta = modeSelectionMeta
-        inventory.setItem(49, modeSelectionItem) // Place the mode selection button in a suitable slot
-
         player.openInventory(inventory)
     }
-
 
     private class ChestGUIHolder : org.bukkit.inventory.InventoryHolder {
         public val positions = ArrayList<WayStoneData>()
@@ -388,8 +360,6 @@ class EndCrystalRightClickListener : Listener {
         val currentWaystone =
             WaystonePosition.waystoneExists(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))
         if (currentWaystone != null) {
-            // Get the filter mode based on player input (e.g., from a GUI)
-            val filterMode = WaystoneFilterMode.OWNER_WAYSTONE // Replace with actual filter mode selection
             val positions = WaystonePosition.getAllPositionNotIncluding(
                 PositionData(
                     x.toDouble(),
@@ -399,8 +369,8 @@ class EndCrystalRightClickListener : Listener {
                 )
             )
 
-            if (WayStones.instance.config.getBoolean("usage-permissions") && !player.hasPermission("waystones.use")) return
-            openChestGUI(player, positions, currentWaystone, 0, filterMode)
+            if (WayStones.instance.config.getBoolean("usage-permissions") && !player.hasPermission("waystones.use")) return // Simple permissions check
+            openChestGUI(player, positions, currentWaystone,0)
             return
         }
         if (WayStones.instance.config.getBoolean("creation-permissions") && !player.hasPermission("waystones.create")) return // Simple permissions check
