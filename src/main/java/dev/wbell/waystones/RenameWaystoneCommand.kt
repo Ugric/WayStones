@@ -1,5 +1,6 @@
 package dev.wbell.waystones
 
+import main.java.dev.wbell.waystones.EndCrystalRightClickListener
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor

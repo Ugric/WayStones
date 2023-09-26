@@ -1,7 +1,6 @@
 package dev.wbell.waystones
 
-import eu.decentsoftware.holograms.api.DHAPI
-import org.bukkit.Location
+import main.java.dev.wbell.waystones.EndCrystalRightClickListener
 import org.bukkit.Particle
 import org.bukkit.Sound
 import org.bukkit.plugin.java.JavaPlugin

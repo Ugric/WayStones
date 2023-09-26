@@ -1,5 +1,6 @@
-package dev.wbell.waystones
+package main.java.dev.wbell.waystones
 
+import dev.wbell.waystones.*
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
@@ -103,7 +104,8 @@ class EndCrystalRightClickListener : Listener {
         val x = block.x
         val y = block.y
         val z = block.z
-        val position = WaystonePosition.waystoneNear(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))
+        val position =
+            WaystonePosition.waystoneNear(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))
         if (position != null) {
             WaystonePosition.removeWaystone(position.pos)
             val strikeLocation = Location(location.world, position.pos.x + 0.5, position.pos.y + 2, position.pos.z + 0.5)
@@ -138,7 +140,6 @@ class EndCrystalRightClickListener : Listener {
         val clickedInventory = event.clickedInventory ?: return
         if (clickedInventory.holder !is ChestGUIHolder) return
         event.isCancelled = true // Prevent item moving or clicking
-
         val player = event.whoClicked as Player
         val clickedSlot = event.slot
         val holder = clickedInventory.holder as ChestGUIHolder
@@ -147,39 +148,31 @@ class EndCrystalRightClickListener : Listener {
         val position = positions[clickedSlot]
         val teleportLocation = Location(Bukkit.getWorld(position.pos.world), position.pos.x + 0.5, position.pos.y, position.pos.z - 0.5)
         val effectLocation = Location(Bukkit.getWorld(position.pos.world), position.pos.x + 0.5, position.pos.y + 2, position.pos.z + 0.5)
+        if (WayStones.instance.config.getBoolean("lightning-at-travelled-from-place")) player.world.strikeLightningEffect(player.location)
+        player.teleportAsync(teleportLocation)
+        Scheduler.runTaskForEntity(player, WayStones.instance, {
+        val world = effectLocation.world
+        if (WayStones.instance.config.getBoolean("lightning-on-travel")) world.strikeLightningEffect(effectLocation)
+        if (WayStones.instance.config.getBoolean("explosion-on-travel")) {
+            val firework = world.spawn(effectLocation, Firework::class.java)
 
-        val scheduler = player.scheduler
+            // Create firework meta
+            val fireworkMeta = firework.fireworkMeta
 
-        scheduler.run(WayStones.instance, {
-            if (WayStones.instance.config.getBoolean("lightning-at-travelled-from-place")) player.world.strikeLightningEffect(player.location)
-            player.teleportAsync(teleportLocation)
-            val world = effectLocation.world
+            // Create a firework effect with a purple color
+            val effect = FireworkEffect.builder().flicker(true).trail(true).withColor(Color.PURPLE).with(FireworkEffect.Type.BALL_LARGE).build()
 
-            if (WayStones.instance.config.getBoolean("lightning-on-travel")) world.strikeLightningEffect(effectLocation)
-            if (WayStones.instance.config.getBoolean("explosion-on-travel")) {
-                val firework = world.spawn(effectLocation, Firework::class.java)
+            // Add the effect to the firework
+            fireworkMeta.addEffect(effect)
 
-                // Create firework meta
-                val fireworkMeta = firework.fireworkMeta
-
-                // Create a firework effect with a purple color
-                val effect = FireworkEffect.builder().flicker(true).trail(true).withColor(Color.PURPLE).with(FireworkEffect.Type.BALL_LARGE).build()
-
-                // Add the effect to the firework
-                fireworkMeta.addEffect(effect)
-
-                // Set the firework meta and detonate it immediately
-                firework.fireworkMeta = fireworkMeta
-                firework.setMetadata("nodamage", FixedMetadataValue(WayStones.instance, true))
-                firework.detonate()
-                player.closeInventory()
-            }
-            player.playSound(effectLocation, Sound.ENTITY_WARDEN_ROAR, 1.0f, 1.0f)
-        }, {
-            println("The player was removed or retired before the task could run.")
-        })
+            // Set the firework meta and detonate it immediately
+            firework.fireworkMeta = fireworkMeta
+            firework.setMetadata("nodamage", FixedMetadataValue(WayStones.instance, true))
+            firework.detonate()
+        }
+        player.playSound(effectLocation, Sound.ENTITY_WARDEN_ROAR, 1.0f, 1.0f)
+        }, 1L)
     }
-
 
     private fun openChestGUI(player: Player, positions: List<WayStoneData>, position: WayStoneData) {
         val holder = ChestGUIHolder()
@@ -210,7 +203,7 @@ class EndCrystalRightClickListener : Listener {
                     //lore.add(Component.text("ระยะ: ${distance(position.pos, positions[i].pos).toInt()} blocks").color(NamedTextColor.AQUA))
                     lore.add(Component.text("ระยะ: ${distance(position.pos, positions[i].pos).toInt()} blocks (${positions[i].pos.x.toInt()}, ${positions[i].pos.y.toInt()}, ${positions[i].pos.z.toInt()})").color(NamedTextColor.AQUA))
                 }
-                meta.lore(lore);
+                meta.lore(lore)
                 meta.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${positions[i].name}"))
                 item.itemMeta = meta
                 inventory.setItem(i, item)
@@ -253,7 +246,8 @@ class EndCrystalRightClickListener : Listener {
         val x = block.x
         val y = block.y
         val z = block.z
-        val position = WaystonePosition.waystoneNear(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), block.world.name))
+        val position =
+            WaystonePosition.waystoneNear(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), block.world.name))
         if (position != null) e.isCancelled = true
     }
 
@@ -277,9 +271,17 @@ class EndCrystalRightClickListener : Listener {
         val z = block.z
         if (!event.action.toString().contains("RIGHT_CLICK")) return
 
-        val currentWaystone = WaystonePosition.waystoneExists(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))
+        val currentWaystone =
+            WaystonePosition.waystoneExists(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))
         if (currentWaystone != null) {
-            val positions = WaystonePosition.getAllPositionNotIncluding(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name))
+            val positions = WaystonePosition.getAllPositionNotIncluding(
+                PositionData(
+                    x.toDouble(),
+                    y.toDouble(),
+                    z.toDouble(),
+                    location.world.name
+                )
+            )
 
             if (WayStones.instance.config.getBoolean("usage-permissions") && !player.hasPermission("waystones.use")) return // Simple permissions check
             openChestGUI(player, positions, currentWaystone)
@@ -355,7 +357,11 @@ class EndCrystalRightClickListener : Listener {
                 player.inventory.removeItem(heldItem)
             }
         }
-        WaystonePosition.addWaystone(PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name), waystoneName, player.uniqueId.toString())
+        WaystonePosition.addWaystone(
+            PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name),
+            waystoneName,
+            player.uniqueId.toString()
+        )
         val world = location.world
         val effectLocation = Location(location.world, x + 0.5, (y + 2).toDouble(), z + 0.5)
         if (WayStones.instance.config.getBoolean("lightning-on-creation")) world.strikeLightningEffect(effectLocation)
