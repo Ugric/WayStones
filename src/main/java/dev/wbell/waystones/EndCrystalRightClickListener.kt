@@ -172,13 +172,13 @@ class EndCrystalRightClickListener : Listener {
 
         if (event.slot == 45 && holder.page > 0) {
             // Previous page button clicked
-            openChestGUI(player, holder.positions, holder.positions[0], holder.page - 1)
+            openChestGUI(player, holder.positions, holder.positions[holder.page * 45], holder.page - 1)
             return
         }
 
         if (event.slot == 53 && holder.page < holder.positions.size / 45) {
             // Next page button clicked
-            openChestGUI(player, holder.positions, holder.positions[0], holder.page + 1)
+            openChestGUI(player, holder.positions, holder.positions[holder.page * 45], holder.page + 1)
             return
         }
 
