@@ -149,7 +149,7 @@ class EndCrystalRightClickListener : Listener {
         val teleportLocation = Location(Bukkit.getWorld(position.pos.world), position.pos.x + 0.5, position.pos.y, position.pos.z - 0.5)
         val effectLocation = Location(Bukkit.getWorld(position.pos.world), position.pos.x + 0.5, position.pos.y + 2, position.pos.z + 0.5)
         if (WayStones.instance.config.getBoolean("lightning-at-travelled-from-place")) player.world.strikeLightningEffect(player.location)
-        player.teleport(teleportLocation)
+        player.teleportAsync(teleportLocation)
         val world = effectLocation.world
         if (WayStones.instance.config.getBoolean("lightning-on-travel")) world.strikeLightningEffect(effectLocation)
         if (WayStones.instance.config.getBoolean("explosion-on-travel")) {
@@ -187,12 +187,19 @@ class EndCrystalRightClickListener : Listener {
                 }
                 lore.add(Component.text(" "))
                 if (positions[i].owner != null) {
-                    lore.add(Component.text("Owner: ${Bukkit.getOfflinePlayer(UUID.fromString(positions[i].owner)).name}").color(NamedTextColor.GRAY))
+                    lore.add(Component.text("สร้างโดย: ${Bukkit.getOfflinePlayer(UUID.fromString(positions[i].owner)).name}").color(NamedTextColor.GRAY))
                 }
                 if (positions[i].pos.world != position.pos.world) {
-                    lore.add(Component.text("World: ${positions[i].pos.world}").color(NamedTextColor.GREEN))
+                    val worldColor = when(positions[i].pos.world) {
+                        "world" -> NamedTextColor.GREEN
+                        "world_nether" -> NamedTextColor.RED
+                        "world_the_end" -> NamedTextColor.LIGHT_PURPLE
+                        else -> NamedTextColor.GRAY // default color if neither of the above
+                    }
+                    lore.add(Component.text("โลก: ${positions[i].pos.world} (${positions[i].pos.x.toInt()}, ${positions[i].pos.y.toInt()}, ${positions[i].pos.z.toInt()})").color(worldColor))
                 } else {
-                    lore.add(Component.text("Distance: ${distance(position.pos, positions[i].pos).toInt()} blocks").color(NamedTextColor.AQUA))
+                    //lore.add(Component.text("ระยะ: ${distance(position.pos, positions[i].pos).toInt()} blocks").color(NamedTextColor.AQUA))
+                    lore.add(Component.text("ระยะ: ${distance(position.pos, positions[i].pos).toInt()} blocks (${positions[i].pos.x.toInt()}, ${positions[i].pos.y.toInt()}, ${positions[i].pos.z.toInt()})").color(NamedTextColor.AQUA))
                 }
                 meta.lore(lore);
                 meta.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${positions[i].name}"))
