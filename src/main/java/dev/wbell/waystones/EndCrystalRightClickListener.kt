@@ -156,10 +156,12 @@ class EndCrystalRightClickListener : Listener {
         if (event.slot == event.inventory.size - 9) {
             // Previous Page Button
             navigatePages(player, holder.positions, positions[0], -1)
+            player.updateInventory()
             return
         } else if (event.slot == event.inventory.size - 1) {
             // Next Page Button
             navigatePages(player, holder.positions, positions[0], 1)
+            player.updateInventory()
             return
         }
 
