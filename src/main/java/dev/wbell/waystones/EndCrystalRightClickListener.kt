@@ -221,7 +221,7 @@ class EndCrystalRightClickListener : Listener {
         // Fill the chest GUI with some items
         for (i in 0 until inventory.size) {
             if (i < positions.size) {
-                val item = ItemStack(Material.END_CRYSTAL)
+                val item = ItemStack(positions[i].rngBlock ?: Material.END_CRYSTAL) // Use the rngBlock, default to END_CRYSTAL
                 val meta = item.itemMeta
                 var lore: MutableList<Component>? = meta.lore()
                 if (lore == null) {
