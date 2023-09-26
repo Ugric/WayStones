@@ -320,8 +320,17 @@ class EndCrystalRightClickListener : Listener {
             inventory.setItem(53, nextPageItem)
         }
 
+        val modeSelectionItem = ItemStack(Material.COMPASS)
+        val modeSelectionMeta = modeSelectionItem.itemMeta
+        modeSelectionMeta.displayName(
+            Component.text("Filter Mode: ${filterMode.name}", NamedTextColor.GRAY)
+        )
+        modeSelectionItem.itemMeta = modeSelectionMeta
+        inventory.setItem(49, modeSelectionItem) // Place the mode selection button in a suitable slot
+
         player.openInventory(inventory)
     }
+
 
     private class ChestGUIHolder : org.bukkit.inventory.InventoryHolder {
         public val positions = ArrayList<WayStoneData>()
