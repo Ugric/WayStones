@@ -150,7 +150,7 @@ class EndCrystalRightClickListener : Listener {
 
         val scheduler = player.scheduler
 
-        scheduler.runDelayed(WayStones.instance, {
+        scheduler.run(WayStones.instance, {
             if (WayStones.instance.config.getBoolean("lightning-at-travelled-from-place")) player.world.strikeLightningEffect(player.location)
             player.teleportAsync(teleportLocation)
             val world = effectLocation.world
@@ -176,7 +176,7 @@ class EndCrystalRightClickListener : Listener {
             player.playSound(effectLocation, Sound.ENTITY_WARDEN_ROAR, 1.0f, 1.0f)
         }, {
             println("The player was removed or retired before the task could run.")
-        }, 0) // 0 tick delay, so the task will execute immediately, but if the player is removed, the retired callback will run instead
+        })
     }
 
 
