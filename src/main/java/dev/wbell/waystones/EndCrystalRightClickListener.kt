@@ -169,6 +169,10 @@ class EndCrystalRightClickListener : Listener {
         if (clickedSlot >= clickedInventory.size || clickedInventory.getItem(clickedSlot) == null) {
             return
         }
+        if (event.click.isShiftClick) {
+            event.isCancelled = true
+            return
+        }
 
         if (event.slot == 45 && holder.page > 0) {
             // Previous page button clicked
@@ -181,6 +185,7 @@ class EndCrystalRightClickListener : Listener {
             openChestGUI(player, holder.positions, holder.positions[0], holder.page + 1)
             return
         }
+
 
 // Check if the player has the item
         if (!player.inventory.contains(Material.ENDER_EYE)) {
@@ -247,7 +252,7 @@ class EndCrystalRightClickListener : Listener {
         val holder = ChestGUIHolder()
         holder.positions.addAll(positions)
         holder.page = page // Set the current page
-        val inventory = Bukkit.createInventory(holder, 54, LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${position.name} (Page $page)"))
+        val inventory = Bukkit.createInventory(holder, 54, LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${position.name} - [$page]"))
 
         val startIndex = page * 45
         val endIndex = Math.min(startIndex + 45, positions.size)
@@ -287,7 +292,7 @@ class EndCrystalRightClickListener : Listener {
             // Add a previous page button
             val prevPageItem = ItemStack(Material.ARROW)
             val prevPageMeta = prevPageItem.itemMeta
-            prevPageMeta.displayName(Component.text("Previous Page").color(NamedTextColor.RED))
+            prevPageMeta.displayName(Component.text("หน้าก่อนหน้านี้").color(NamedTextColor.RED))
             prevPageItem.itemMeta = prevPageMeta
             inventory.setItem(45, prevPageItem)
         }
@@ -296,7 +301,7 @@ class EndCrystalRightClickListener : Listener {
             // Add a next page button
             val nextPageItem = ItemStack(Material.ARROW)
             val nextPageMeta = nextPageItem.itemMeta
-            nextPageMeta.displayName(Component.text("Next Page").color(NamedTextColor.GREEN))
+            nextPageMeta.displayName(Component.text("หน้าุถัดไป").color(NamedTextColor.GREEN))
             nextPageItem.itemMeta = nextPageMeta
             inventory.setItem(53, nextPageItem)
         }
