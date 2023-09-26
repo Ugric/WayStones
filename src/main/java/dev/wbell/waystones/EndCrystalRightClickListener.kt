@@ -139,7 +139,6 @@ class EndCrystalRightClickListener : Listener {
         if (clickedInventory.holder !is ChestGUIHolder) return
         event.isCancelled = true // Prevent item moving or clicking
 
-
         val player = event.whoClicked as Player
         val clickedSlot = event.slot
         val holder = clickedInventory.holder as ChestGUIHolder
@@ -148,29 +147,38 @@ class EndCrystalRightClickListener : Listener {
         val position = positions[clickedSlot]
         val teleportLocation = Location(Bukkit.getWorld(position.pos.world), position.pos.x + 0.5, position.pos.y, position.pos.z - 0.5)
         val effectLocation = Location(Bukkit.getWorld(position.pos.world), position.pos.x + 0.5, position.pos.y + 2, position.pos.z + 0.5)
-        if (WayStones.instance.config.getBoolean("lightning-at-travelled-from-place")) player.world.strikeLightningEffect(player.location)
-        player.teleportAsync(teleportLocation)
-        val world = effectLocation.world
-        if (WayStones.instance.config.getBoolean("lightning-on-travel")) world.strikeLightningEffect(effectLocation)
-        if (WayStones.instance.config.getBoolean("explosion-on-travel")) {
-            val firework = world.spawn(effectLocation, Firework::class.java)
 
-            // Create firework meta
-            val fireworkMeta = firework.fireworkMeta
+        val scheduler = player.scheduler
 
-            // Create a firework effect with a purple color
-            val effect = FireworkEffect.builder().flicker(true).trail(true).withColor(Color.PURPLE).with(FireworkEffect.Type.BALL_LARGE).build()
+        scheduler.runDelayed(WayStones.instance, {
+            if (WayStones.instance.config.getBoolean("lightning-at-travelled-from-place")) player.world.strikeLightningEffect(player.location)
+            player.teleportAsync(teleportLocation)
+            val world = effectLocation.world
 
-            // Add the effect to the firework
-            fireworkMeta.addEffect(effect)
+            if (WayStones.instance.config.getBoolean("lightning-on-travel")) world.strikeLightningEffect(effectLocation)
+            if (WayStones.instance.config.getBoolean("explosion-on-travel")) {
+                val firework = world.spawn(effectLocation, Firework::class.java)
 
-            // Set the firework meta and detonate it immediately
-            firework.fireworkMeta = fireworkMeta
-            firework.setMetadata("nodamage", FixedMetadataValue(WayStones.instance, true))
-            firework.detonate()
-        }
-        player.playSound(effectLocation, Sound.ENTITY_WARDEN_ROAR, 1.0f, 1.0f)
+                // Create firework meta
+                val fireworkMeta = firework.fireworkMeta
+
+                // Create a firework effect with a purple color
+                val effect = FireworkEffect.builder().flicker(true).trail(true).withColor(Color.PURPLE).with(FireworkEffect.Type.BALL_LARGE).build()
+
+                // Add the effect to the firework
+                fireworkMeta.addEffect(effect)
+
+                // Set the firework meta and detonate it immediately
+                firework.fireworkMeta = fireworkMeta
+                firework.setMetadata("nodamage", FixedMetadataValue(WayStones.instance, true))
+                firework.detonate()
+            }
+            player.playSound(effectLocation, Sound.ENTITY_WARDEN_ROAR, 1.0f, 1.0f)
+        }, {
+            println("The player was removed or retired before the task could run.")
+        }, 0) // 0 tick delay, so the task will execute immediately, but if the player is removed, the retired callback will run instead
     }
+
 
     private fun openChestGUI(player: Player, positions: List<WayStoneData>, position: WayStoneData) {
         val holder = ChestGUIHolder()
