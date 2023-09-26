@@ -255,9 +255,9 @@ class EndCrystalRightClickListener : Listener {
         for (i in startIndex until endIndex) {
             val indexInInventory = i - startIndex
             val item = ItemStack(positions[i].rngBlock ?: Material.END_CRYSTAL) // Use the rngBlock, default to END_CRYSTAL
-                val meta = item.itemMeta
-                var lore: MutableList<Component>? = meta.lore()
-                if (lore == null) {
+            val meta = item.itemMeta
+            var lore: MutableList<Component>? = meta?.lore() ?: ArrayList()
+            if (lore == null) {
                     lore = ArrayList()
                 }
                 lore.add(Component.text(" "))

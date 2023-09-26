@@ -2,6 +2,7 @@ package dev.wbell.waystones
 
 import main.java.dev.wbell.waystones.EndCrystalRightClickListener
 import org.bukkit.ChatColor
+import org.bukkit.Material
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
@@ -14,13 +15,19 @@ class ReiconWaystoneCommand : CommandExecutor {
             sender.sendMessage("Only players can use this command!")
             return true
         }
-        if (args.isEmpty()) {
-            return false
-        }
+
         if (!sender.hasPermission("waystones.reicon")) {
             sender.sendMessage("${ChatColor.DARK_RED}You do not have permission to use this command!")
             return true
         }
+
+        val heldItem = sender.inventory.itemInMainHand.type
+
+        if (heldItem == Material.AIR) {
+            sender.sendMessage("${ChatColor.RED}You must be holding an item in your main hand to use this command.")
+            return true
+        }
+
         val location = sender.location
         var nearest: WayStoneData? = null
         for (waystone in WayStones.WaystonePosition.positions) {
@@ -34,13 +41,11 @@ class ReiconWaystoneCommand : CommandExecutor {
                 }
             }
         }
+
         if (nearest == null) {
             sender.sendMessage("No waystone found!")
             return true
         }
-
-        // Determine the item the player is holding
-        val heldItem = sender.inventory.itemInMainHand.type
 
         WaystonePosition.reiconWaystone(nearest.pos, heldItem)
 

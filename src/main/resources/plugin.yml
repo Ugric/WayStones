@@ -8,7 +8,7 @@ softdepend: [DecentHolograms]
 commands:
   reiconwaystone:
     description: 'Reicons a waystone.'
-    usage: /reiconwaystone Holding item
+    usage: /reiconwaystone
     permission: waystones.reicon
     aliases: [rwi]
   renamewaystone:

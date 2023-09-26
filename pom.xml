@@ -99,7 +99,7 @@
                                 <argument>-P</argument>
                                 <argument>24</argument>
                                 <argument>.\target\WayStones-1.0.jar</argument>
-                                <argument>mid@ssh.lynse:~/hynse/devtest/plugins/</argument>
+                                <argument>mid@ssh.lynse:~/hynse/vanilla/plugins/</argument>
                             </arguments>
                         </configuration>
                     </execution>
