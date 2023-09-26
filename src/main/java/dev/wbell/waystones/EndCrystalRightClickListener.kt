@@ -16,6 +16,7 @@ import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryDragEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.server.PluginEnableEvent
 import org.bukkit.inventory.Inventory
@@ -137,6 +138,17 @@ class EndCrystalRightClickListener : Listener {
             }
         }
     }
+    @EventHandler
+    fun onInventoryDrag(event: InventoryDragEvent) {
+        val clickedInventory = event.inventory
+        if (clickedInventory.holder !is ChestGUIHolder) return
+        val player = event.whoClicked as Player
+
+        if (teleportingPlayers.contains(player.uniqueId)) {
+            // Cancel the inventory drag event if the player is teleporting
+            event.isCancelled = true
+        }
+    }
 
     @EventHandler
     fun onInventoryClick(event: InventoryClickEvent) {
@@ -145,11 +157,16 @@ class EndCrystalRightClickListener : Listener {
         event.isCancelled = true
         val player = event.whoClicked as Player
         val holder = clickedInventory.holder as ChestGUIHolder
+        val clickedSlot = event.slot
 
         if (teleportingPlayers.contains(player.uniqueId)) {
             player.closeInventory()
             player.sendMessage("${ChatColor.RED}คุณกำลังอยู่ในการวาร์ป")
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f)
+            return
+        }
+        // Check if the clicked slot is empty
+        if (clickedSlot >= clickedInventory.size || clickedInventory.getItem(clickedSlot) == null) {
             return
         }
 
@@ -179,7 +196,7 @@ class EndCrystalRightClickListener : Listener {
         player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_FLUTE, 1.0f, 1.0f)
         player.closeInventory()
 
-        val clickedSlot = event.slot
+
         val positions = holder.positions
         if (clickedSlot >= positions.size) return
         val position = positions[clickedSlot]
