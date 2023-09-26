@@ -382,7 +382,7 @@ class EndCrystalRightClickListener : Listener {
 
         val heldItemMeta = heldItem.itemMeta
 
-        var waystoneName = "Waystone (${x}, ${y}, ${z})"
+        var waystoneName = "จุด (${x}, ${y}, ${z})"
         if (heldItemMeta.hasDisplayName()) {
             val displayNameComponent: Component? = heldItemMeta.displayName()
             if (displayNameComponent != null) {
@@ -397,10 +397,14 @@ class EndCrystalRightClickListener : Listener {
                 player.inventory.removeItem(heldItem)
             }
         }
+        val randomBlocks = listOf(Material.DIAMOND, Material.GOLD_INGOT, Material.IRON_INGOT, Material.REDSTONE, Material.COAL, Material.COPPER_INGOT, Material.LAPIS_BLOCK, Material.EMERALD, Material.NETHERITE_INGOT, Material.QUARTZ)
+        val randomBlock = randomBlocks[Random().nextInt(randomBlocks.size)]
+
         WaystonePosition.addWaystone(
             PositionData(x.toDouble(), y.toDouble(), z.toDouble(), location.world.name),
             waystoneName,
-            player.uniqueId.toString()
+            player.uniqueId.toString(),
+            rngBlock = randomBlock,
         )
         val world = location.world
         val effectLocation = Location(location.world, x + 0.5, (y + 2).toDouble(), z + 0.5)

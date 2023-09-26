@@ -3,6 +3,7 @@ package dev.wbell.waystones
 import com.google.gson.Gson
 import org.bukkit.Bukkit
 import org.bukkit.Location
+import org.bukkit.Material
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
@@ -40,9 +41,9 @@ class WaystonePosition {
             return null
         }
 
-        fun addWaystone(position: PositionData, name: String, owner: String?) {
+        fun addWaystone(position: PositionData, name: String, owner: String?, rngBlock: Material?) {
             val id = "waystone-"+ UUID.randomUUID().toString()
-            positions.add(WayStoneData(position, name, id, owner))
+            positions.add(WayStoneData(position, name, id, owner, rngBlock))
             Holograms.createHologram(id, Location(Bukkit.getWorld(position.world), position.x + 0.5, (position.y + 3), position.z + 0.5), name)
             savePositions()
         }
@@ -51,7 +52,7 @@ class WaystonePosition {
             for (i in positions.indices) {
                 val pos = positions[i]
                 if (position.x == pos.pos.x && position.y == pos.pos.y && position.z == pos.pos.z) {
-                    positions[i] = WayStoneData(position, name, pos.id, pos.owner)
+                    positions[i] = WayStoneData(position, name, pos.id, pos.owner, null)
                     Holograms.editHologram(pos.id!!, 0, name)
                     savePositions()
                     return
