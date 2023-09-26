@@ -147,22 +147,22 @@ class EndCrystalRightClickListener : Listener {
 
         if (teleportingPlayers.contains(player.uniqueId)) {
             player.closeInventory()
-            player.sendMessage("คุณกำลังอยู่ในการวาร์ป")
+            player.sendMessage("${ChatColor.RED}คุณกำลังอยู่ในการวาร์ป")
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f)
             return
         }
 
-        // Check if the player has the item
+// Check if the player has the item
         if (!player.inventory.contains(Material.SCULK)) {
             player.closeInventory()
-            player.sendMessage("คุณต้องมี Sculk เพื่อใช้งานเสาวาร์ป")
+            player.sendMessage("${ChatColor.YELLOW}คุณต้องมี Sculk เพื่อใช้งานเสาวาร์ป")
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO, 1.0f, 1.0f)
             return
         }
 
-        // Consume the item
+// Consume the item
         player.inventory.removeItem(ItemStack(Material.SCULK, 1))
-        player.sendMessage("ใช้ 1 Sculk แล้วในการวาร์ป")
+        player.sendMessage("${ChatColor.GREEN}ใช้ 1 Sculk แล้วในการวาร์ป")
         player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_FLUTE, 1.0f, 1.0f)
         player.closeInventory()
 
