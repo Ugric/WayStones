@@ -60,6 +60,18 @@ class WaystonePosition {
             }
             throw RuntimeException("Waystone not found")
         }
+        fun reiconWaystone(position: PositionData, newRngBlock: Material?) {
+            for (i in positions.indices) {
+                val pos = positions[i]
+                if (position.x == pos.pos.x && position.y == pos.pos.y && position.z == pos.pos.z) {
+                    positions[i] = WayStoneData(pos.pos, pos.name, pos.id, pos.owner, newRngBlock)
+                    savePositions()
+                    return
+                }
+            }
+            throw RuntimeException("Waystone not found")
+        }
+
 
         fun removeWaystone(position: PositionData) {
             for (i in positions.indices) {

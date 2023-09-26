@@ -14,6 +14,7 @@ class WayStones : JavaPlugin() {
         val endCrystalRightClickListener = EndCrystalRightClickListener()
         server.pluginManager.registerEvents(endCrystalRightClickListener, this)
         getCommand("renamewaystone")!!.setExecutor(RenameWaystoneCommand())
+        getCommand("reiconwaystone")!!.setExecutor(ReiconWaystoneCommand())
         File(dataFolder.absolutePath).mkdirs()
         dev.wbell.waystones.WaystonePosition.loadPositions(File(dataFolder.absolutePath, "waystones.json"))
         PluginConfigFile.loadConfig(config, File(dataFolder.absolutePath, "config.yml"))

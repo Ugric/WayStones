@@ -6,10 +6,16 @@ main: dev.wbell.waystones.WayStones
 api-version: '1.20'
 softdepend: [DecentHolograms]
 commands:
+  reiconwaystone:
+    description: 'Reicons a waystone.'
+    usage: /reiconwaystone Holding item
+    permission: waystones.reicon
+    aliases: [rwi]
   renamewaystone:
     description: 'Renames a waystone.'
     usage: /renamewaystone <name>
     permission: waystones.rename
+    aliases: [rwn]
 permissions:
   waystones.rename:
     description: Allows players to rename Waystones via command
