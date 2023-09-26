@@ -20,3 +20,4 @@ permissions:
   waystones.use:
     description: Allows players to use Waystones
     default: op
+folia-supported: true
