@@ -25,6 +25,7 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.*
 import kotlin.concurrent.thread
+import kotlin.math.ceil
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -153,16 +154,16 @@ class EndCrystalRightClickListener : Listener {
         }
 
 // Check if the player has the item
-        if (!player.inventory.contains(Material.SCULK)) {
+        if (!player.inventory.contains(Material.ENDER_EYE)) {
             player.closeInventory()
-            player.sendMessage("${ChatColor.YELLOW}คุณต้องมี Sculk เพื่อใช้งานเสาวาร์ป")
+            player.sendMessage("${ChatColor.YELLOW}คุณต้องมี ENDER_EYE เพื่อใช้งานเสาวาร์ป")
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO, 1.0f, 1.0f)
             return
         }
 
 // Consume the item
-        player.inventory.removeItem(ItemStack(Material.SCULK, 1))
-        player.sendMessage("${ChatColor.GREEN}ใช้ 1 Sculk แล้วในการวาร์ป")
+        player.inventory.removeItem(ItemStack(Material.ENDER_EYE, 1))
+        player.sendMessage("${ChatColor.GREEN}ใช้ 1 ENDER_EYE แล้วในการวาร์ป")
         player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_FLUTE, 1.0f, 1.0f)
         player.closeInventory()
 
@@ -214,15 +215,26 @@ class EndCrystalRightClickListener : Listener {
         }, 60L) // Change 60L to adjust the delay in ticks. 20 ticks = 1 second
     }
 
-    private fun openChestGUI(player: Player, positions: List<WayStoneData>, position: WayStoneData) {
+    private fun openChestGUI(player: Player, positions: List<WayStoneData>, position: WayStoneData, page: Int) {
+        val itemsPerPage = 45 // Number of items to display per page (excluding page navigation items)
+        val totalPages = ceil(positions.size.toDouble() / itemsPerPage).toInt()
+
+        if (page < 0 || page >= totalPages) {
+            // Invalid page number, handle this as needed
+            return
+        }
+
+        val startIndex = page * itemsPerPage
+        val endIndex = minOf((page + 1) * itemsPerPage, positions.size)
+
         val holder = ChestGUIHolder()
         holder.positions.addAll(positions)
-        val inventory = Bukkit.createInventory(holder, 54, LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${position.name}"))
-        // Fill the chest GUI with some items
-        for (i in 0 until inventory.size) {
-            if (i < positions.size) {
-                val item = ItemStack(positions[i].rngBlock ?: Material.END_CRYSTAL) // Use the rngBlock, default to END_CRYSTAL
-                val meta = item.itemMeta
+        val inventory = Bukkit.createInventory(holder, 54, LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${position.name} (Page ${page + 1}/$totalPages)"))
+
+        // Fill the chest GUI with items for the current page
+        for (i in startIndex until endIndex) {
+            val item = ItemStack(positions[i].rngBlock ?: Material.END_CRYSTAL) // Use the rngBlock, default to END_CRYSTAL
+            val meta = item.itemMeta
                 var lore: MutableList<Component>? = meta.lore()
                 if (lore == null) {
                     lore = ArrayList()
@@ -241,25 +253,38 @@ class EndCrystalRightClickListener : Listener {
                     lore.add(Component.text("โลก: ${positions[i].pos.world} (${positions[i].pos.x.toInt()}, ${positions[i].pos.y.toInt()}, ${positions[i].pos.z.toInt()})").color(worldColor))
                 } else {
                     //lore.add(Component.text("ระยะ: ${distance(position.pos, positions[i].pos).toInt()} blocks").color(NamedTextColor.AQUA))
-                    lore.add(Component.text("ระยะ: ${distance(position.pos, positions[i].pos).toInt()} blocks (${positions[i].pos.x.toInt()}, ${positions[i].pos.y.toInt()}, ${positions[i].pos.z.toInt()})").color(NamedTextColor.AQUA))
+                    lore.add(Component.text("ระยะ: ${distance(position.pos, positions[i].pos).toInt()} บล็อก (${positions[i].pos.x.toInt()}, ${positions[i].pos.y.toInt()}, ${positions[i].pos.z.toInt()})").color(NamedTextColor.AQUA))
                 }
                 meta.lore(lore)
                 meta.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize("&5&l${positions[i].name}"))
                 item.itemMeta = meta
-                inventory.setItem(i, item)
-            } else {
-                val item = ItemStack(Material.GRAY_STAINED_GLASS_PANE)
-                val meta = item.itemMeta
-                meta.displayName(Component.text(" "))
-                item.itemMeta = meta
-                inventory.setItem(i, item)
+                inventory.setItem(i - startIndex, item) // Adjust the index based on the current page
             }
+
+            // Add page navigation items (previous and next page buttons)
+            if (page > 0) {
+                // Add previous page button
+                val prevPageItem = ItemStack(Material.ARROW)
+                val prevPageMeta = prevPageItem.itemMeta
+                prevPageMeta.displayName(Component.text("Previous Page"))
+                prevPageItem.itemMeta = prevPageMeta
+                inventory.setItem(45, prevPageItem)
+            }
+
+            if (page < totalPages - 1) {
+                // Add next page button
+                val nextPageItem = ItemStack(Material.ARROW)
+                val nextPageMeta = nextPageItem.itemMeta
+                nextPageMeta.displayName(Component.text("Next Page"))
+                nextPageItem.itemMeta = nextPageMeta
+                inventory.setItem(53, nextPageItem)
+            }
+
+            player.openInventory(inventory)
         }
 
-        player.openInventory(inventory)
-    }
 
-    private class ChestGUIHolder : org.bukkit.inventory.InventoryHolder {
+        private class ChestGUIHolder : org.bukkit.inventory.InventoryHolder {
         public val positions = ArrayList<WayStoneData>()
         val page = 0
         override fun getInventory(): Inventory {
@@ -303,6 +328,7 @@ class EndCrystalRightClickListener : Listener {
 
     @EventHandler
     fun onPlayerInteract(event: PlayerInteractEvent) {
+
         val player = event.player
         val block = event.clickedBlock ?: return
         val location = block.location
@@ -324,7 +350,8 @@ class EndCrystalRightClickListener : Listener {
             )
 
             if (WayStones.instance.config.getBoolean("usage-permissions") && !player.hasPermission("waystones.use")) return // Simple permissions check
-            openChestGUI(player, positions, currentWaystone)
+            val page = 0 // You can initialize the page to 0 initially
+            openChestGUI(player, positions, currentWaystone, page)
             return
         }
         if (WayStones.instance.config.getBoolean("creation-permissions") && !player.hasPermission("waystones.create")) return // Simple permissions check
@@ -397,7 +424,7 @@ class EndCrystalRightClickListener : Listener {
                 player.inventory.removeItem(heldItem)
             }
         }
-        val randomBlocks = listOf(Material.DIAMOND, Material.GOLD_INGOT, Material.IRON_INGOT, Material.REDSTONE, Material.COAL, Material.COPPER_INGOT, Material.LAPIS_BLOCK, Material.EMERALD, Material.NETHERITE_INGOT, Material.QUARTZ)
+        val randomBlocks = listOf(Material.DIAMOND, Material.GOLD_INGOT, Material.IRON_INGOT, Material.REDSTONE, Material.COAL, Material.COPPER_INGOT, Material.LAPIS_LAZULI, Material.EMERALD, Material.NETHERITE_INGOT, Material.QUARTZ)
         val randomBlock = randomBlocks[Random().nextInt(randomBlocks.size)]
 
         WaystonePosition.addWaystone(
