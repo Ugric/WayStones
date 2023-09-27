@@ -133,10 +133,6 @@
                 <id>jitpack.io</id>
                 <url>https://jitpack.io</url>
             </repository>
-            <repository>
-                <id>fancyplugins-repo</id>
-                <url>https://repo.fancyplugins.de/releases</url>
-            </repository>
         </repositories>
 
         <dependencies>
@@ -145,11 +141,6 @@
                 <artifactId>folia-api</artifactId>
                 <version>1.20.1-R0.1-SNAPSHOT</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>de.oliver</groupId>
-                <artifactId>FancyHolograms</artifactId>
-                <version>2.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains.kotlinx</groupId>
