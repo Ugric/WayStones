@@ -26,7 +26,7 @@ class FancyHolograms {
         }
 
         fun enableHolograms() {
-            if (WayStones.holograms) {
+            if (WayStones.fancyholograms) {
                 try {
                     val pluginEnabled = FancyHologramsPlugin.get().plugin.isEnabled
                     if (pluginEnabled) {
@@ -35,13 +35,13 @@ class FancyHolograms {
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    WayStones.holograms = false
+                    WayStones.fancyholograms = false
                 }
             }
         }
 
         fun createHologram(name: String, location: Location, text: String) {
-            if (WayStones.holograms) {
+            if (WayStones.fancyholograms) {
                 val hologramManager: HologramManager = FancyHologramsPlugin.get().hologramManager
                 val optionalHologram: Optional<Hologram> = hologramManager.getHologram(name)
 
@@ -62,7 +62,7 @@ class FancyHolograms {
 
 
         fun deleteHologram(name: String) {
-            if (WayStones.holograms) {
+            if (WayStones.fancyholograms) {
                 try {
                     val hologramManager: HologramManager = FancyHologramsPlugin.get().hologramManager
                     val optionalHologram: Optional<Hologram> = hologramManager.getHologram(name)
@@ -78,7 +78,7 @@ class FancyHolograms {
         }
 
         fun editHologram(name: String, text: String) {
-            if (WayStones.holograms) {
+            if (WayStones.fancyholograms) {
                 try {
                     val hologramManager: HologramManager = FancyHologramsPlugin.get().hologramManager
                     val optionalHologram: Optional<Hologram> = hologramManager.getHologram(name)
