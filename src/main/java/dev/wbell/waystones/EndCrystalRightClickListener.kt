@@ -38,8 +38,8 @@
         fun onPluginEnable(event: PluginEnableEvent) {
             if (!WayStones.holograms) return
             val enabledPlugin = event.plugin
-            if (enabledPlugin.name == "DecentHolograms") {
-                Holograms.runEnable()
+            if (enabledPlugin.name == "FancyHolograms") {
+                FancyHolograms.runEnable()
             }
         }
 

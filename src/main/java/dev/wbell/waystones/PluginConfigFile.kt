@@ -10,6 +10,7 @@ class PluginConfigFile {
                 config.load(file)
             }
             config.addDefault("holograms", false)
+            config.addDefault("fancyholograms", false)
             config.addDefault("creation-permissions", false)
             config.addDefault("usage-permissions", false)
             config.addDefault("lightning-on-travel", true)

@@ -18,12 +18,13 @@ class WaystonePosition {
         private val gson = Gson()
         private var dataFile: File? = null
         val positions: MutableList<WayStoneData> = ArrayList()
+
         fun waystoneNear(pos: PositionData): WayStoneData? {
             for (height in -1..2) {
                 for (width in -1..1) {
                     for (length in -1..1) {
                         val position = waystoneExists(PositionData(pos.x + width, pos.y + height, pos.z + length, pos.world))
-                        if (position!=null) {
+                        if (position != null) {
                             return position
                         }
                     }
@@ -42,9 +43,9 @@ class WaystonePosition {
         }
 
         fun addWaystone(position: PositionData, name: String, owner: String?, rngBlock: Material?) {
-            val id = "waystone-"+ UUID.randomUUID().toString()
+            val id = "waystone-" + UUID.randomUUID().toString()
             positions.add(WayStoneData(position, name, id, owner, rngBlock))
-            Holograms.createHologram(id, Location(Bukkit.getWorld(position.world), position.x + 0.5, (position.y + 3), position.z + 0.5), name)
+            FancyHolograms.createHologram(id, Location(Bukkit.getWorld(position.world), position.x + 0.5, (position.y + 3), position.z + 0.5), name)
             savePositions()
         }
 
@@ -53,13 +54,14 @@ class WaystonePosition {
                 val pos = positions[i]
                 if (position.x == pos.pos.x && position.y == pos.pos.y && position.z == pos.pos.z) {
                     positions[i] = WayStoneData(position, name, pos.id, pos.owner, null)
-                    Holograms.editHologram(pos.id!!, 0, name)
+                    FancyHolograms.editHologram(pos.id!!, name)
                     savePositions()
                     return
                 }
             }
             throw RuntimeException("Waystone not found")
         }
+
         fun reiconWaystone(position: PositionData, newRngBlock: Material?) {
             for (i in positions.indices) {
                 val pos = positions[i]
@@ -72,13 +74,12 @@ class WaystonePosition {
             throw RuntimeException("Waystone not found")
         }
 
-
         fun removeWaystone(position: PositionData) {
             for (i in positions.indices) {
                 val pos = positions[i]
                 if (position.x == pos.pos.x && position.y == pos.pos.y && position.z == pos.pos.z) {
                     positions.removeAt(i)
-                    Holograms.deleteHologram(pos.id!!)
+                    FancyHolograms.deleteHologram(pos.id!!)
                     savePositions()
                     return
                 }

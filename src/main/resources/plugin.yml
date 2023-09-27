@@ -6,7 +6,7 @@ main: dev.wbell.waystones.WayStones
 api-version: '1.20'
 softdepend:
   - DecentHolograms
-  - FancyHolograms
+  - main.java.dev.wbell.waystones.FancyHolograms
 commands:
   reiconwaystone:
     description: 'Reicons a waystone.'
