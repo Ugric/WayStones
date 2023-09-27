@@ -18,7 +18,7 @@ class WayStones : JavaPlugin() {
         File(dataFolder.absolutePath).mkdirs()
         dev.wbell.waystones.WaystonePosition.loadPositions(File(dataFolder.absolutePath, "waystones.json"))
         PluginConfigFile.loadConfig(config, File(dataFolder.absolutePath, "config.yml"))
-        holograms = config.getBoolean("holograms")
+        fancyholograms = config.getBoolean("fancyholograms")
         val ambiantSoundString = config.getString("ambiant-sound")
         if (ambiantSoundString != null) {
             try {
@@ -36,7 +36,7 @@ class WayStones : JavaPlugin() {
             }
         }
         endCrystalRightClickListener.playerNearbyHandler()
-        Holograms.enableHolograms()
+        FancyHolograms.enableHolograms()
     }
 
     override fun onDisable() {
@@ -48,7 +48,7 @@ class WayStones : JavaPlugin() {
 
 
     companion object {
-        var holograms = false
+        var fancyholograms = true
 
         var running = true
         var WaystonePosition = WaystonePosition()

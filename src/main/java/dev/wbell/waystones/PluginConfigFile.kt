@@ -9,8 +9,7 @@ class PluginConfigFile {
             if (file.exists()) {
                 config.load(file)
             }
-            config.addDefault("holograms", false)
-            config.addDefault("creation-permissions", false)
+            config.addDefault("fancyholograms", true)
             config.addDefault("usage-permissions", false)
             config.addDefault("lightning-on-travel", true)
             config.addDefault("lightning-at-travelled-from-place", true)
@@ -29,7 +28,7 @@ class PluginConfigFile {
 
             // add comments
 
-            config.setComments("holograms", MutableList(1) { "enable holograms (requires DecentHolograms)" })
+            config.setComments("fancyholograms", MutableList(1) { "enable holograms (requires DecentHolograms)" })
             config.setComments("creation-permissions", MutableList(1) { "require permissions to create waystones" })
             config.setComments("usage-permissions", MutableList(1) { "require permissions to use waystones" })
             config.setComments("lightning-on-travel", MutableList(1) { "strike lightning on teleported location" })

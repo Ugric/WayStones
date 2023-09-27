@@ -1,5 +1,6 @@
-# enable holograms (requires DecentHolograms)
+# enable holograms (requires DecentHolograms main.java.dev.wbell.waystones.FancyHolograms)
 holograms: false
+fancyholograms: true
 
 # require permissions to create waystones
 creation-permissions: false
